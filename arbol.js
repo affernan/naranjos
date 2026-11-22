@@ -47,16 +47,40 @@
     t.appendChild(crear('span', 'nom', p.n));
     if (p.f) t.appendChild(crear('span', 'fec', p.f));
     e.appendChild(t);
-    if (p.nd) { var d = crear('i', 'docs', p.nd); d.title = plural(p.nd, 'documento', 'documentos') + ' con imagen'; e.appendChild(d); }
     return e;
   }
 
-  function abierto(id, nHermanos) {
+  // Los Naranjo se muestran con toda su descendencia; las ramas de otros apellidos, plegadas
+  function abierto(id) {
     if (abiertos.hasOwnProperty(id)) return abiertos[id];
-    return !!P[id].v || nHermanos <= 3;
+    return !!P[id].nj;
   }
 
-  function unidad(id, nivel, nHermanos) {
+  function conDescendencia(id, nivel) { return lista(id, 'h').length > 0 && nivel < 30 && abierto(id); }
+
+  // Si ningún hijo tiene su rama abierta, los hijos van en fila y centrados.
+  // Si alguno la tiene, la familia se escalona: una línea baja por la izquierda y de ella
+  // salen los hijos; los que no tienen rama abierta se agrupan en filas.
+  function contenedor(base, ids, nivel) {
+    var c = crear('div', base);
+    if (!ids.some(function (h) { return conDescendencia(h, nivel); })) {
+      ids.forEach(function (h) { c.appendChild(unidad(h, nivel)); });
+      return c;
+    }
+    c.classList.add('indentado');
+    var grupo = null;
+    ids.forEach(function (h) {
+      var u = unidad(h, nivel);
+      if (conDescendencia(h, nivel)) { grupo = null; c.appendChild(u); }
+      else {
+        if (!grupo) { grupo = crear('div', 'grupo-hojas'); c.appendChild(grupo); }
+        grupo.appendChild(u);
+      }
+    });
+    return c;
+  }
+
+  function unidad(id, nivel) {
     var u = crear('div', 'unidad');
     u.setAttribute('data-u', id);
     var par = crear('div', 'pareja');
@@ -65,21 +89,20 @@
     u.appendChild(par);
     var hs = lista(id, 'h');
     if (hs.length) {
-      if (nivel === 1 && abierto(id, nHermanos)) {
-        var sub = crear('div', 'hijos');
-        hs.forEach(function (h) { sub.appendChild(unidad(h, 2, hs.length)); });
+      if (nivel < 30 && abierto(id)) {
+        var sub = contenedor('hijos', hs, nivel + 1);
+        if (sub.classList.contains('indentado')) u.classList.add('izq');
         u.appendChild(sub);
-        var cerrar = crear('button', 'desplegar abierto', 'ocultar sus hijos');
-        cerrar.type = 'button'; cerrar.setAttribute('data-plegar', id);
-        u.appendChild(cerrar);
-      } else if (nivel === 1) {
-        var b = crear('button', 'desplegar', '▾ ' + plural(hs.length, 'hijo', 'hijos'));
-        b.type = 'button'; b.setAttribute('data-desplegar', id);
-        u.appendChild(b);
+        if (abiertos[id] === true) {   // abierta a mano: se puede volver a plegar
+          var cerrar = crear('button', 'desplegar abierto', '▴ plegar los hijos de ' + P[id].n.split(' ')[0]);
+          cerrar.type = 'button'; cerrar.setAttribute('data-plegar', id);
+          u.appendChild(cerrar);
+        }
       } else {
-        var m = crear('button', 'desplegar mas', '↓ ' + plural(hs.length, 'hijo', 'hijos'));
-        m.type = 'button'; m.setAttribute('data-ir', id); m.title = 'Poner a ' + P[id].n + ' en el centro';
-        u.appendChild(m);
+        var b = crear('button', 'desplegar', '▾ ver ' + plural(hs.length, 'hijo', 'hijos'));
+        b.type = 'button'; b.setAttribute('data-desplegar', id);
+        b.title = 'Mostrar los hijos de ' + P[id].n;
+        u.appendChild(b);
       }
     }
     return u;
@@ -109,8 +132,7 @@
       filas[L].forEach(function (id, j) {
         var h = crear('div', 'hueco');
         if (id) {
-          var arriba = L === filas.length - 1 && lista(id, 'p').length;
-          var c = caja(id, 'asc' + (arriba ? ' arriba' : ''));
+          var c = caja(id, 'asc');
           c.setAttribute('data-slot', L + '-' + j);
           h.appendChild(c);
         }
@@ -131,16 +153,14 @@
     }
     var cf = caja(foco, 'foco'); cf.setAttribute('data-slot', '0-0'); cf.setAttribute('aria-current', 'true');
     cen.appendChild(cf);
-    lista(foco, 'c').forEach(function (c) { der.appendChild(caja(c, 'conyuge' + (lista(c, 'p').length ? ' arriba' : ''))); });
+    lista(foco, 'c').forEach(function (c) { der.appendChild(caja(c, 'conyuge')); });
     ff.appendChild(izq); ff.appendChild(cen); ff.appendChild(der);
     raiz.appendChild(ff);
 
     // descendientes
     var hijos = lista(foco, 'h');
     if (hijos.length) {
-      var desc = crear('div', 'desc');
-      hijos.forEach(function (h) { desc.appendChild(unidad(h, 1, hijos.length)); });
-      raiz.appendChild(desc);
+      raiz.appendChild(contenedor('desc', hijos, 1));
     } else {
       raiz.appendChild(crear('p', 'sin-hijos', 'No constan hijos en el árbol.'));
     }
@@ -254,18 +274,58 @@
     var ancla = anclaPareja(cf, conyF);
     var desc = raiz.querySelector('.desc');
     if (desc) {
-      var unidades = Array.prototype.slice.call(desc.children).filter(function (u) { return u.classList.contains('unidad'); });
-      // si hay pareja se baja desde la barra, pero pasando por debajo de los recuadros
-      bajar(ancla, unidades, foco, em);
+      conectar(ancla, desc, foco, em);
       // cada hijo con su pareja y, si la rama está abierta, con sus propios hijos
       Array.prototype.forEach.call(desc.querySelectorAll('.unidad'), function (u) {
         var hijo = u.querySelector(':scope > .pareja > .nodo.hijo');
         var cs = Array.prototype.slice.call(u.querySelectorAll(':scope > .pareja > .nodo.conyuge'));
         var a = anclaPareja(hijo, cs);
         var sub = u.querySelector(':scope > .hijos');
-        if (sub) bajar(a, Array.prototype.slice.call(sub.children), u.getAttribute('data-u'), em);
+        if (sub) conectar(a, sub, u.getAttribute('data-u'), em);
       });
     }
+  }
+
+  function conectar(ancla, cont, idPadre, em) {
+    if (!cont.classList.contains('indentado')) {
+      bajar(ancla, Array.prototype.slice.call(cont.children), idPadre, em);
+      return;
+    }
+    // familia escalonada: línea vertical a la izquierda y ramales hacia cada hijo
+    var c = rect(cont), tx = c.x + 0.9 * em, y0 = c.y + 0.9 * em;
+    var fin = y0, finVerde = null, algunoVerde = false;
+    function cajaHijo(u) { return u.querySelector(':scope > .pareja > .nodo.hijo'); }
+    Array.prototype.forEach.call(cont.children, function (el) {
+      if (el.classList.contains('unidad')) {
+        var hb = cajaHijo(el), b = rect(hb), v = esVerde(idPadre, hb.getAttribute('data-id'));
+        trazo('M' + tx + ' ' + b.cy + ' H' + b.x, v ? 'verde' : '');
+        fin = Math.max(fin, b.cy);
+        if (v) { algunoVerde = true; finVerde = Math.max(finVerde || 0, b.cy); }
+        return;
+      }
+      // grupo de hijos sin rama abierta: una barra por cada fila del grupo
+      var filas = [];
+      Array.prototype.forEach.call(el.children, function (u) {
+        var hb = cajaHijo(u), b = rect(hb), f = filas.filter(function (f) { return Math.abs(f.y - rect(u).y) < 3; })[0];
+        if (!f) { f = { y: rect(u).y, hs: [] }; filas.push(f); }
+        f.hs.push({ b: b, id: hb.getAttribute('data-id') });
+      });
+      filas.forEach(function (f) {
+        var bus = f.y - 1.1 * em, xmax = tx, vmax = null;
+        f.hs.forEach(function (h) {
+          var v = esVerde(idPadre, h.id);
+          trazo('M' + h.b.cx + ' ' + bus + ' V' + (h.b.y - 1), v ? 'verde' : '');
+          xmax = Math.max(xmax, h.b.cx);
+          if (v) vmax = Math.max(vmax || 0, h.b.cx);
+        });
+        trazo('M' + tx + ' ' + bus + ' H' + xmax, '');
+        if (vmax !== null) { trazo('M' + tx + ' ' + bus + ' H' + vmax, 'verde'); algunoVerde = true; finVerde = Math.max(finVerde || 0, bus); }
+        fin = Math.max(fin, bus);
+      });
+    });
+    var bajada = 'M' + ancla.x + ' ' + ancla.y + ' V' + y0 + ' H' + tx;
+    trazo(bajada, ''); trazo('M' + tx + ' ' + y0 + ' V' + fin, '');
+    if (algunoVerde) { trazo(bajada, 'verde'); trazo('M' + tx + ' ' + y0 + ' V' + finVerde, 'verde'); }
   }
 
   /* ---------------- ficha breve (debajo del árbol) ---------------- */
@@ -295,7 +355,8 @@
     if (p.fo) { var im = crear('img', 'retrato-mini'); im.src = p.fo; im.alt = 'Retrato de ' + p.n; cab.appendChild(im); }
     var tt = crear('div');
     tt.appendChild(crear('h2', '', p.n));
-    if (p.f) tt.appendChild(crear('p', 'fechas', p.f));
+    var linea = [p.f, p.l].filter(Boolean).join(' · ');
+    if (linea) tt.appendChild(crear('p', 'fechas', linea));
     cab.appendChild(tt);
     panel.appendChild(cab);
     if (p.r) panel.appendChild(crear('p', 'resumen', p.r));

@@ -431,3 +431,21 @@ svg.lineas .nudo.verde { fill: var(--linea-verde); }
   .arbol-din .fila-foco { column-gap: .8em; }
   .arbol-din .pareja .nodo { width: 9.4em; }
 }
+
+/* Cajas: solo nombre, fechas y foto; el nombre siempre completo */
+.arbol-din .nodo .nom, .arbol-din .nodo.foco .nom { display: block; -webkit-line-clamp: unset; overflow: visible; overflow-wrap: break-word; hyphens: auto; }
+.arbol-din .nodo .fec { white-space: normal; overflow: visible; }
+.arbol-din .nodo { min-height: 3.8em; }
+@media (max-width: 560px) {
+  .arbol-din .nodo { padding: .3em .35em; gap: .3em; }
+  .arbol-din .nodo img { width: 2em; height: 2.6em; }
+}
+
+/* Familias escalonadas (ramas Naranjo desplegadas) */
+.arbol-din .nodo .nom, .arbol-din .nodo.foco .nom { hyphens: manual; overflow-wrap: break-word; }
+.arbol-din .desc.indentado, .arbol-din .hijos.indentado { display: flex; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-start; gap: 2.4em; padding-left: 2.4em; padding-top: 2.6em; max-width: 100%; }
+.arbol-din .grupo-hojas { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 2.3em .8em; max-width: 100%; }
+.arbol-din .unidad.izq { align-items: flex-start; }
+@media (max-width: 560px) {
+  .arbol-din .desc.indentado, .arbol-din .hijos.indentado { padding-left: 1.7em; }
+}

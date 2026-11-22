@@ -102,36 +102,36 @@ persona("rosalia-rodriguez-valdes", nombre="Rosalía Rodríguez Valdés", fechas
 
 persona("agustin-naranjo-rodriguez", nombre="Agustín Benito Naranjo Rodríguez", fechas="Telde, 1875 – Pinar del Río, h. 1950-1955", clave=True,
     resumen="El mayor de los tres hermanos. Emigró a Cuba y formó su familia en Pinar del Río con Quirina Fernández. Su vínculo con Félix y Rosalía está documentado en el nacimiento de su hija Inocencia.",
-    datos=[("Nacimiento", "Telde, 3 abr 1875 (bautizado el mismo día)"), ("Padres", "Félix Naranjo Cabrera y Rosalía Rodríguez Valdés"), ("Madrina", "Su abuela Regina de los Ángeles Valdés Delgado"), ("Pareja", "Quirina Fernández Fernández, natural de San Luis (Pinar del Río), hija de Antonio Fernández (canario) e Inocencia Fernández"), ("Hijos", "Juana (1908), José (1914), Inocencia «Nina» (1915), Felicita y Félix"), ("Residencia", "Pinar del Río (consta en 1927)"), ("Defunción", "Carretera de La Coloma, Pinar del Río, entre 1950 y 1955 (tradición familiar)")],
+    datos=[("Nacimiento", "Telde, 3 abr 1875 (bautizado el mismo día)"), ("Padres", "Félix Naranjo Cabrera y Rosalía Rodríguez Valdés"), ("Madrina", "Su abuela Regina de los Ángeles Valdés Delgado"), ("Pareja", "Quirina Fernández Fernández, natural de San Luis (Pinar del Río), hija de Antonio Fernández (canario) e Inocencia Fernández"), ("Hijos", "Juana (1908), José (1914), Inocencia «Nina» (1915) y Felicita"), ("Residencia", "Pinar del Río (consta en 1927)"), ("Defunción", "Carretera de La Coloma, Pinar del Río, entre 1950 y 1955 (tradición familiar)")],
     vida=[("3 abr 1875", "Nace y se bautiza en Telde."), ("antes de 1900", "Emigra a Cuba con su madre y sus hermanos."), ("24 jun 1908", "Nace su hija Juana."), ("26 abr 1914", "Nace su hijo José."), ("20 jun 1915", "Nace su hija Inocencia «Nina» en el Barrio Primero de Ovas, Pinar del Río."), ("4 oct 1927", "Comparece en el Registro Civil de Pinar del Río para inscribir a Inocencia; consta como natural de Canarias, hijo de Félix y Rosalía."), ("h. 1950-1955", "Muere en la carretera de La Coloma, Pinar del Río.")],
     docs=[],
     enlaces=[perfil("GLX3-WSP")],
     pendiente=["Su defunción en el Registro Civil de Pinar del Río.", "Su matrimonio civil con Quirina, si lo hubo.", "Archivo Nacional de Cuba: Registro General de Españoles de 1899-1900."],
-    familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "quirina-fernandez-fernandez", "juana-naranjo-fernandez", "felix-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "adrian-naranjo-rodriguez", "natalio-naranjo-rodriguez"])
+    familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "quirina-fernandez-fernandez", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "adrian-naranjo-rodriguez", "natalio-naranjo-rodriguez"])
 
 persona("quirina-fernandez-fernandez", nombre="Quirina Úrsula Fernández Fernández", fechas="n. San Luis (Pinar del Río)", foto="img/fotos/quirina-fernandez.jpg",
-    resumen="Cubana de San Luis, en la provincia de Pinar del Río, hija de un canario. Compañera de Agustín Naranjo y madre de sus cinco hijos.",
-    datos=[("Nacimiento", "San Luis, Pinar del Río (Cuba)"), ("Padres", "Antonio Fernández (canario) e Inocencia Fernández"), ("Pareja", "Agustín Benito Naranjo Rodríguez"), ("Hijos", "Juana, José, Inocencia «Nina», Felicita y Félix Naranjo Fernández")],
+    resumen="Cubana de San Luis, en la provincia de Pinar del Río, hija de un canario. Compañera de Agustín Naranjo y madre de sus hijos.",
+    datos=[("Nacimiento", "San Luis, Pinar del Río (Cuba)"), ("Padres", "Antonio Fernández (canario) e Inocencia Fernández"), ("Pareja", "Agustín Benito Naranjo Rodríguez"), ("Hijos", "Juana, José, Inocencia «Nina» y Felicita Naranjo Fernández")],
     enlaces=[perfil("GLX3-6WW")],
-    familia=["agustin-naranjo-rodriguez", "juana-naranjo-fernandez", "felix-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "felicita-naranjo-fernandez"])
+    familia=["agustin-naranjo-rodriguez", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "felicita-naranjo-fernandez"])
 
 persona("juana-naranjo-fernandez", nombre="Juana Naranjo Fernández", fechas="1908 – Lisboa, 2012", foto="img/fotos/juana-naranjo-fernandez.jpg",
     resumen="Hija de Agustín y Quirina, la mayor de los hermanos conocidos. Según la familia murió en Lisboa con 104 años.",
     datos=[("Nacimiento", "24 jun 1908 (Cuba)"), ("Padres", "Agustín Naranjo Rodríguez y Quirina Fernández Fernández"), ("Defunción", "12 oct 2012, Lisboa (Portugal)")],
     pendiente=["Documentar su nacimiento y su defunción."],
-    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "inocencia-naranjo-fernandez", "jose-naranjo-fernandez", "felix-naranjo-fernandez", "felicita-naranjo-fernandez"])
+    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "inocencia-naranjo-fernandez", "jose-naranjo-fernandez", "felicita-naranjo-fernandez"])
 
 persona("jose-naranjo-fernandez", nombre="José Naranjo Fernández", fechas="1914 – 1989", foto="img/fotos/jose-naranjo-fernandez.jpg",
     resumen="Hijo de Agustín y Quirina.",
     datos=[("Nacimiento", "26 abr 1914 (Cuba)"), ("Padres", "Agustín Naranjo Rodríguez y Quirina Fernández Fernández"), ("Defunción", "2 ago 1989")],
     pendiente=["Documentar su nacimiento y su defunción."],
-    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "inocencia-naranjo-fernandez", "juana-naranjo-fernandez", "felix-naranjo-fernandez", "felicita-naranjo-fernandez"])
+    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "inocencia-naranjo-fernandez", "juana-naranjo-fernandez", "felicita-naranjo-fernandez"])
 
 persona("felicita-naranjo-fernandez", nombre="Felicita Naranjo Fernández", fechas="sin fechas documentadas",
     resumen="Hija de Agustín y Quirina, según el árbol familiar. Sin documentar.",
     datos=[("Padres", "Agustín Naranjo Rodríguez y Quirina Fernández Fernández")],
     pendiente=["Cualquier documento que confirme su nacimiento."],
-    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "felix-naranjo-fernandez"])
+    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez"])
 
 persona("adrian-naranjo-rodriguez", nombre="Adrián Salvador Naranjo Rodríguez", fechas="n. Telde, 2 may 1877", clave=True,
     resumen="El segundo de los hermanos. Lleva el nombre de su abuelo y de su padrino, el tío Salvador de Venezuela. En 1900 estaba en Pinar del Río.",
@@ -142,12 +142,12 @@ persona("adrian-naranjo-rodriguez", nombre="Adrián Salvador Naranjo Rodríguez"
     familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "agustin-naranjo-rodriguez", "natalio-naranjo-rodriguez", "salvador-naranjo-cabrera"])
 
 persona("natalio-naranjo-rodriguez", nombre="Natalio Naranjo Rodríguez", fechas="n. Telde, 1 dic 1878", clave=True,
-    resumen="El menor. Nació en Telde cuando su padre ya navegaba hacia La Habana. Emigró a Cuba con su madre y sus hermanos; de su vida allí no hay todavía documentos.",
-    datos=[("Nacimiento", "Telde, 1 dic 1878; bautizado el 9 dic"), ("Padres", "Félix Naranjo Cabrera y Rosalía Rodríguez Valdés"), ("Madrina", "Su tía Carolina Rodríguez Valdés")],
-    vida=[("1 dic 1878", "Nace en Telde; su padre había salido hacia Cuba unas tres semanas antes."), ("antes de 1900", "Emigra a Cuba con su madre y sus hermanos."), ("nota", "Las memorias de Nina le atribuyen un hijo, Félix, que se fue a Canarias en 1924; el árbol familiar sitúa a ese Félix entre los hijos de Agustín.")],
+    resumen="El menor. Nació en Telde cuando su padre ya navegaba hacia La Habana. Emigró a Cuba con su madre y sus hermanos. Fue padre de Félix Naranjo Fernández, que en 1924 se fue a Canarias.",
+    datos=[("Nacimiento", "Telde, 1 dic 1878; bautizado el 9 dic"), ("Padres", "Félix Naranjo Cabrera y Rosalía Rodríguez Valdés"), ("Madrina", "Su tía Carolina Rodríguez Valdés"), ("Hijos", "Félix Naranjo Fernández (n. h. 1904-1905, en Cuba)")],
+    vida=[("1 dic 1878", "Nace en Telde; su padre había salido hacia Cuba unas tres semanas antes."), ("antes de 1900", "Emigra a Cuba con su madre y sus hermanos."), ("h. 1904-1905", "Nace en Cuba su hijo Félix Naranjo Fernández."), ("1924", "Su hijo Félix se va a Canarias (memorias de Nina).")],
     docs=[],
-    pendiente=["Cualquier documento suyo en Cuba: matrimonio, hijos, defunción."],
-    familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "agustin-naranjo-rodriguez", "adrian-naranjo-rodriguez"])
+    pendiente=["Cualquier documento suyo en Cuba: matrimonio (con una Fernández), nacimiento de su hijo Félix, defunción."],
+    familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "felix-naranjo-fernandez", "agustin-naranjo-rodriguez", "adrian-naranjo-rodriguez"])
 
 persona("inocencia-naranjo-fernandez", nombre="Inocencia María «Nina» Naranjo Fernández", fechas="Pinar del Río, 1915 – La Habana, 2010",
     resumen="Hija de Agustín y Quirina. Su certificado de nacimiento es la prueba de que su padre era hijo de Félix y Rosalía. Sus memorias recogen la historia de la familia en Cuba.",
@@ -155,7 +155,7 @@ persona("inocencia-naranjo-fernandez", nombre="Inocencia María «Nina» Naranjo
     vida=[("20 jun 1915", "Nace en el Barrio Primero de Ovas, Pinar del Río."), ("4 oct 1927", "Su padre la inscribe en el Registro Civil de Pinar del Río."), ("2010", "Muere en La Habana.")],
     docs=[],
     enlaces=[perfil("GLX3-JVF")],
-    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "hugo-fernandez-arada", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "felix-naranjo-fernandez", "felicita-naranjo-fernandez"])
+    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "hugo-fernandez-arada", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "felicita-naranjo-fernandez"])
 
 persona("hugo-fernandez-arada", nombre="Hugo Ángel Fernández Arada", fechas="Pinar del Río, 1913 – h. 1984-1989",
     resumen="Esposo de Inocencia «Nina» Naranjo Fernández. Tuvieron cinco hijos, nacidos entre 1942 y 1955.",
@@ -164,12 +164,12 @@ persona("hugo-fernandez-arada", nombre="Hugo Ángel Fernández Arada", fechas="P
     familia=["inocencia-naranjo-fernandez"])
 
 persona("felix-naranjo-fernandez", nombre="Félix Naranjo Fernández", fechas="n. h. 1904-1905 · Cuba y Santa Cruz de Tenerife",
-    resumen="Hijo de Agustín y Quirina según el árbol familiar; lleva el nombre de su abuelo. Un Félix Naranjo Fernández vivía en Santa Cruz de Tenerife en los años treinta con la edad que le corresponde: muy probablemente es él.",
-    datos=[("Padres", "Agustín Naranjo Rodríguez y Quirina Fernández Fernández (árbol familiar)"), ("Nacimiento", "Hacia 1904-1905, en Cuba (tenía 31 años en marzo de 1936)"), ("Domicilio", "Calle de Santa Rosalía, Santa Cruz de Tenerife (1936)"), ("Nota", "Las memorias de Nina hablan de un Félix, nacido en Cuba, que en 1924 se fue a Canarias para curarse y no volvió. Allí se le atribuye a Natalio, pero el apellido Naranjo Fernández es el de los hijos de Agustín y Quirina.")],
+    resumen="Hijo de Natalio Naranjo Rodríguez; lleva el nombre de su abuelo Félix. Nació en Cuba y en 1924 se fue a Canarias. Un Félix Naranjo Fernández vivía en Santa Cruz de Tenerife en los años treinta con la edad que le corresponde: muy probablemente es él.",
+    datos=[("Padre", "Natalio Naranjo Rodríguez (según la familia)"), ("Madre", "De apellido Fernández; sin identificar"), ("Abuelos paternos", "Félix Naranjo Cabrera y Rosalía Rodríguez Valdés"), ("Nacimiento", "Hacia 1904-1905, en Cuba (tenía 31 años en marzo de 1936)"), ("Domicilio", "Calle de Santa Rosalía, Santa Cruz de Tenerife (1936)"), ("Nota", "Las memorias de Nina cuentan que Félix, nacido en Cuba, se fue a Canarias en 1924 para curarse y ya no volvió.")],
     vida=[("1924", "Viaja de Cuba a Canarias (tradición familiar)."), ("21 feb 1933", "Denuncia el robo de su bicicleta en Santa Cruz de Tenerife."), ("14 mar 1936", "Atendido en la Casa de Socorro por un corte en el pulgar; «de 31 años, domiciliado en la calle de Santa Rosalía».")],
     docs=["hoy1933", "gaceta1936"],
-    pendiente=["Padrón municipal de Santa Cruz (1930-1945): daría su fecha y lugar de nacimiento y confirmaría que es el hijo de Agustín.", "Libros de enterramientos de los cementerios de Santa Cruz.", "Con eso, pedir su defunción o matrimonio al Registro Civil."],
-    familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "felicita-naranjo-fernandez"])
+    pendiente=["Padrón municipal de Santa Cruz (1930-1945): daría su fecha y lugar de nacimiento y el nombre de su madre.", "Libros de enterramientos de los cementerios de Santa Cruz.", "Con eso, pedir su defunción o matrimonio al Registro Civil."],
+    familia=["natalio-naranjo-rodriguez", "felix-naranjo-cabrera", "rosalia-rodriguez-valdes"])
 
 persona("salvador-naranjo-cabrera", nombre="Salvador José Naranjo Cabrera", fechas="Telde, 1819 – Venezuela",
     resumen="El mayor de los hermanos Naranjo Cabrera. Llegó a Venezuela con 18 años y se estableció en La Victoria (Aragua). Fue padrino de su sobrino Adrián Salvador en 1877.",
@@ -219,7 +219,7 @@ persona("jose-naranjo-cabrera", nombre="José Naranjo Cabrera", fechas="1836 –
 ORDEN_PERSONAS = ["adrian-naranjo-cubas", "antonia-cabrera-padron",
     "salvador-naranjo-cabrera", "francisco-javier-naranjo-cabrera", "jose-naranjo-cabrera", "manuel-naranjo-cabrera", "juan-naranjo-cabrera", "felix-naranjo-cabrera", "rosalia-rodriguez-valdes",
     "agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "adrian-naranjo-rodriguez", "natalio-naranjo-rodriguez",
-    "juana-naranjo-fernandez", "felicita-naranjo-fernandez", "inocencia-naranjo-fernandez", "hugo-fernandez-arada", "felix-naranjo-fernandez", "jose-naranjo-fernandez"]
+    "juana-naranjo-fernandez", "felicita-naranjo-fernandez", "inocencia-naranjo-fernandez", "hugo-fernandez-arada", "jose-naranjo-fernandez", "felix-naranjo-fernandez"]
 
 # ----------------------------------------------------------------------------------
 # PLANTILLA
@@ -325,6 +325,7 @@ def portada():
     import _datos_arbol
     personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js")
     atajos = [
+        ("salvador-gonzalez-naranjo", "Todo el árbol", "desde Telde, s. XVIII"),
         ("diego-perez-naranjo", "Los primeros Naranjo", "h. 1470"),
         ("gregorio-suarez-navarro-naranjo", "Gregorio Suárez Navarro Naranjo", "1668"),
         ("adrian-naranjo-cubas", "Adrián Naranjo y Cubas y sus 18 hijos", "1799"),
@@ -340,7 +341,7 @@ def portada():
   <div class="presentacion">
     <h1>Árbol genealógico</h1>
     <p class="entradilla">Los Naranjo de Telde, una familia de Gran Canaria con antepasados conocidos desde finales del siglo XV. En el XIX varios hermanos Naranjo Cabrera cruzaron el Atlántico hacia Venezuela y Cuba, y una de sus ramas echó raíces en Pinar del Río.</p>
-    <p class="instrucciones">Pulse sobre cualquier persona para ponerla en el centro: arriba aparecen sus padres y abuelos, a su lado su pareja y debajo sus hijos. Más abajo verá su ficha, con enlaces a los documentos y fotos.</p>
+    <p class="instrucciones">Los Naranjo aparecen con toda su descendencia; las ramas de otros apellidos están plegadas: pulse «▾ ver hijos» para abrirlas. Pulse sobre cualquier persona para ponerla en el centro, con sus padres y abuelos encima; debajo del árbol verá su ficha, con enlaces a documentos y fotos.</p>
     <div class="leyenda"><span><i class="muestra naranjo"></i>Apellido Naranjo</span><span><i class="muestra"></i>Otros apellidos</span><span><i class="muestra borde-verde"></i>Rama que llegó a Pinar del Río (Cuba)</span></div>
   </div>
 </section>
@@ -348,7 +349,7 @@ def portada():
   <form class="buscador" role="search" autocomplete="off"><label for="buscar-persona">Buscar a una persona</label><input id="buscar-persona" type="search" list="lista-personas" placeholder="Escriba un nombre: Natalio, Patricio, Tascón…"><datalist id="lista-personas"></datalist><button type="submit">Ir</button></form>
   <nav class="atajos" aria-label="Ir a una rama de la familia">{botones}</nav>
 </div>
-<div id="arbol" class="arbol-din" data-inicio="felix-naranjo-cabrera" aria-live="polite"><noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript></div>
+<div id="arbol" class="arbol-din" data-inicio="salvador-gonzalez-naranjo" aria-live="polite"><noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript></div>
 <section id="ficha-breve" class="ficha-breve" aria-live="polite"></section>
 <script src="{ver('arbol-datos.js')}"></script>
 <script src="{ver('arbol.js')}"></script>
@@ -422,7 +423,7 @@ def viajes():
 <h2>Rosalía y los hijos en Pinar del Río</h2>
 <p>Según las memorias de Inocencia «Nina», antes de 1900 se fueron a Cuba unas dieciséis personas de la familia: Rosalía, sus hijos y sus hermanos Lucas y Juan. Se establecieron en la provincia de Pinar del Río, la tierra natal de Rosalía. No se ha encontrado todavía la lista de su barco: en los buques de emigrantes, la prensa habanera solo publicaba el número de pasajeros.</p>
 <h2>Vuelta a Canarias</h2>
-<p>En 1924, Félix, nacido en Cuba e hijo de Agustín y Quirina según el árbol familiar, cruzó el Atlántico en sentido contrario para curarse en Canarias y ya no regresó. Un <a href="personas/felix-naranjo-fernandez.html">Félix Naranjo Fernández</a> vivía en Santa Cruz de Tenerife en los años treinta.</p>"""
+<p>En 1924, Félix, nacido en Cuba e hijo de Natalio, cruzó el Atlántico en sentido contrario para curarse en Canarias y ya no regresó. Un <a href="personas/felix-naranjo-fernandez.html">Félix Naranjo Fernández</a> vivía en Santa Cruz de Tenerife en los años treinta.</p>"""
     pagina("viajes.html", "Viajes y emigración · Los Naranjo de Telde", "Las rutas de la familia Naranjo: Telde, Venezuela y Cuba.", c, actual="viajes.html")
 
 def cronologia():
@@ -449,7 +450,7 @@ def cronologia():
         ("24 jun 1908", "Nace Juana, hija de Agustín y Quirina.", "juana-naranjo-fernandez"),
         ("26 abr 1914", "Nace José, hijo de Agustín y Quirina.", "jose-naranjo-fernandez"),
         ("20 jun 1915", "Nace Inocencia «Nina», hija de Agustín y Quirina, en Pinar del Río.", "inocencia-naranjo-fernandez"),
-        ("1924", "Félix Naranjo Fernández, nacido en Cuba, viaja a Canarias (tradición familiar).", "felix-naranjo-fernandez"),
+        ("1924", "Félix Naranjo Fernández, hijo de Natalio y nacido en Cuba, viaja a Canarias (tradición familiar).", "felix-naranjo-fernandez"),
         ("4 oct 1927", "<b>Agustín inscribe a su hija Inocencia en Pinar del Río</b>: «natural de Canarias», hijo de Félix y Rosalía.", "agustin-naranjo-rodriguez"),
         ("21 feb 1933", "Félix Naranjo Fernández, en Santa Cruz de Tenerife.", "felix-naranjo-fernandez"),
         ("14 mar 1936", "«Félix Naranjo, de 31 años», en la Casa de Socorro de Santa Cruz.", "felix-naranjo-fernandez"),

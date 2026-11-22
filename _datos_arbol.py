@@ -186,7 +186,7 @@ def fechas_de(p):
     d = anio(r"fallecid[oa]", t)
     if not n and not d and p.get("tA"):
         a = p["tA"].replace("ca ", "c. ")
-        return a.replace("†", "† ")
+        return re.sub(r"(\d{4})-(\d{4})", r"\1 – \2", a.replace("†", "† "))
     if n and d:
         return f"{n} – {d}"
     if n:
@@ -233,17 +233,17 @@ def nuestras_personas():
     # Pinar del Río
     propia("antonio-fernandez", "Antonio Fernández", "", "m", [], ["inocencia-fernandez"], "Canario, padre de Quirina (certificado de nacimiento de su nieta Inocencia).")
     propia("inocencia-fernandez", "Inocencia Fernández", "", "f", [], ["antonio-fernandez"], "Madre de Quirina.")
-    propia("quirina-fernandez-fernandez", "Quirina Úrsula Fernández Fernández", "San Luis (Cuba)", "f", ["antonio-fernandez", "inocencia-fernandez"], ["agustin-naranjo-rodriguez"],
+    propia("quirina-fernandez-fernandez", "Quirina Úrsula Fernández Fernández", "", "f", ["antonio-fernandez", "inocencia-fernandez"], ["agustin-naranjo-rodriguez"],
            "Natural de San Luis, en la provincia de Pinar del Río.")
     AQ = ["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez"]
-    propia("felix-naranjo-fernandez", "Félix Naranjo Fernández", "h. 1904-1905", "m", AQ, [], "Nacido en Cuba; en 1924 se fue a Canarias. Vivía en Santa Cruz de Tenerife en los años treinta.")
+    propia("felix-naranjo-fernandez", "Félix Naranjo Fernández", "h. 1904-1905", "m", ["natalio-naranjo-rodriguez"], [], "Hijo de Natalio. Nacido en Cuba; en 1924 se fue a Canarias. Vivía en Santa Cruz de Tenerife en los años treinta.")
     propia("juana-naranjo-fernandez", "Juana Naranjo Fernández", "1908 – 2012", "f", AQ, [], "Nació el 24 de junio de 1908 y murió en Lisboa el 12 de octubre de 2012.")
     propia("jose-naranjo-fernandez", "José Naranjo Fernández", "1914 – 1989", "m", AQ, [], "Nació el 26 de abril de 1914; murió el 2 de agosto de 1989.")
     propia("inocencia-naranjo-fernandez", "Inocencia «Nina» Naranjo Fernández", "1915 – 2010", "f", AQ, ["hugo-fernandez-arada"],
            "Nació el 20 de junio de 1915 en el Barrio Primero de Ovas (Pinar del Río); murió en La Habana en 2010.")
     propia("felicita-naranjo-fernandez", "Felicita Naranjo Fernández", "", "f", AQ, [], "Hija de Agustín y Quirina según el árbol familiar.")
     propia("hugo-fernandez-arada", "Hugo Ángel Fernández Arada", "1913 – h. 1984-89", "m", [], ["inocencia-naranjo-fernandez"], "Nació en Pinar del Río el 2 de octubre de 1913.")
-    propia("hijos-de-nina", "Cinco hijos", "1942-1955 · personas vivas", "", ["inocencia-naranjo-fernandez", "hugo-fernandez-arada"], [],
+    propia("hijos-de-nina", "Cinco hijos (personas vivas)", "", "", ["inocencia-naranjo-fernandez", "hugo-fernandez-arada"], [],
            "Los cinco hijos de Inocencia y Hugo viven; no se publican sus datos.")
     # Venezuela (FamilySearch)
     S = "salvador|naranjo cabrera|1"
@@ -275,9 +275,9 @@ def nuestras_personas():
 CORRIGE = {
     "regina|valdes delgado|0": dict(n="Regina de los Ángeles Valdés Delgado", t="Madre de Rosalía y madrina de su nieto Agustín en Telde (1875). Geneanet escribe «Valdés Delgano»."),
     "agustin|rodriguez de sosa|0": dict(n="Agustín Rodríguez de Sosa", t="Padre de Rosalía Rodríguez Valdés."),
-    "rosalia|rodriguez valdes|0": dict(f="Consolación del Sur (Cuba)"),
+    "rosalia|rodriguez valdes|0": dict(f="", l="Nacida en Consolación del Sur, Pinar del Río (Cuba)"),
     "felix|naranjo cabrera|0": dict(f="1843"),
-    "salvador|naranjo cabrera|1": dict(f="1819 – Venezuela", n="Salvador José Naranjo Cabrera"),
+    "salvador|naranjo cabrera|1": dict(f="1819", l="Murió en Venezuela", n="Salvador José Naranjo Cabrera"),
     "francisco javier|naranjo cabrera|0": dict(f="1820 – 1866"),
     "manuel|naranjo cabrera|2": dict(f="1839 – 1913"),
     "adrian jose nicolas|naranjo de cubas|0": dict(n="Adrián Naranjo y Cubas"),
@@ -324,6 +324,7 @@ def generar(P_fichas=None, destino=None):
         if k in CORRIGE:
             c = CORRIGE[k]
             d["n"] = c.get("n", d["n"]); d["f"] = c.get("f", d["f"])
+            if c.get("l"): d["l"] = c["l"]
             if c.get("t"): d["t"] = c["t"] + (" " + d["t"] if d["t"] and d["t"] != c["t"] else "")
         personas[ids[k]] = d
     ids_k = dict(ids)
@@ -333,6 +334,7 @@ def generar(P_fichas=None, destino=None):
         return ids_k.get(canon(x), x)
     for id_, nombre, fechas, sexo, padres, conyuges, texto in EXTRA:
         personas[id_] = dict(n=nombre, f=fechas, s=sexo, t=texto, g="", p=[], c=[], h=[], propia=1)
+    personas["quirina-fernandez-fernandez"]["l"] = "Nacida en San Luis, Pinar del Río (Cuba)"
     for id_, nombre, fechas, sexo, padres, conyuges, texto in EXTRA:
         d = personas[id_]
         for x in padres:
