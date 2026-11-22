@@ -5,6 +5,11 @@ editar aquí y ejecutar   python _construir.py
 import pathlib, html
 
 RAIZ = pathlib.Path(__file__).parent
+
+def ver(nombre):
+    """Marca de versión para que los navegadores no usen una copia antigua en caché."""
+    import hashlib
+    return nombre + "?v=" + hashlib.sha1((RAIZ / nombre).read_bytes()).hexdigest()[:8]
 FS = "https://www.familysearch.org"
 
 def ark(codigo, texto=None):
@@ -233,7 +238,7 @@ def pagina(nombre_archivo, titulo, descripcion, contenido, base="", actual=None,
 <title>{html.escape(titulo)}</title>
 <meta name="description" content="{html.escape(descripcion)}">
 <link rel="icon" href="{base}img/escudo-naranjo.png">
-<link rel="stylesheet" href="{base}estilo.css">
+<link rel="stylesheet" href="{base}{ver('estilo.css')}">
 </head>
 <body class="{clase}">
 <header class="sitio"><div class="envoltura cabecera">
@@ -345,8 +350,8 @@ def portada():
 </div>
 <div id="arbol" class="arbol-din" data-inicio="felix-naranjo-cabrera" aria-live="polite"><noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript></div>
 <section id="ficha-breve" class="ficha-breve" aria-live="polite"></section>
-<script src="arbol-datos.js"></script>
-<script src="arbol.js"></script>
+<script src="{ver('arbol-datos.js')}"></script>
+<script src="{ver('arbol.js')}"></script>
 <p class="nota-arbol">{len([x for x in personas.values() if not x.get("priv")])} personas. Las generaciones antiguas y las ramas de Telde y Las Palmas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. La rama de Pinar del Río, la de Venezuela y los padres de Quirina son de nuestra investigación. Solo se publican datos de personas fallecidas.</p>
 
 <h2>Las rutas de la familia</h2>
