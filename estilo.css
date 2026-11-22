@@ -341,3 +341,93 @@ svg.lineas .nudo.verde { fill: var(--linea-verde); }
 .pedigri .nodo.verde:not(.naranjo) .nom { color: var(--linea-verde-tinta); }
 .leyenda .muestra.naranjo { background: var(--naranja); border: 1px solid var(--naranja-borde); }
 .leyenda .muestra.borde-verde { background: transparent; border: 2px solid var(--linea-verde); }
+
+/* ===== Árbol dinámico (portada) ===== */
+:root { --naranja: #f6d3a4; --naranja-borde: #c97a2b; --naranja-tinta: #7a3d0c; }
+.herramientas { display: flex; flex-direction: column; align-items: center; gap: .7rem; margin: .4rem 0 1.2rem; }
+.buscador { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem .6rem; width: 100%; max-width: 640px; }
+.buscador label { font-family: "IM Fell English SC", serif; color: var(--sepia); }
+.buscador input { flex: 1 1 14rem; min-width: 0; font: inherit; font-size: 1rem; padding: .35rem .6rem; background: var(--papel-claro); color: var(--tinta); border: 1px solid var(--linea); border-radius: var(--radio); }
+.buscador input:focus { outline: 2px solid var(--sepia); outline-offset: 1px; }
+.buscador button, .atajos button, .arbol-din .desplegar, .arbol-din .ver-hermanos, .ficha-breve .enlace-persona { font: inherit; cursor: pointer; }
+.buscador button { font-size: 1rem; padding: .35rem .9rem; background: var(--sepia); color: var(--papel-claro); border: 0; border-radius: var(--radio); }
+.atajos { display: flex; flex-wrap: wrap; justify-content: center; gap: .45rem; }
+.atajos button { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; padding: .3rem .7rem; font-size: .92rem; color: var(--tinta); background: var(--papel-claro); border: 1px solid var(--linea); border-radius: 2px; box-shadow: 1px 2px 4px var(--sombra); }
+.atajos button b { font-family: "IM Fell English", serif; font-weight: normal; }
+.atajos button small { font-style: italic; color: var(--tinta-suave); font-size: .8em; }
+.atajos button:hover, .atajos button:focus-visible { border-color: var(--sepia); color: var(--sepia); outline: none; }
+
+.arbol-din { position: relative; left: 50%; transform: translateX(-50%); width: min(1240px, calc(100vw - 32px)); font-size: clamp(9px, 1.04vw, 13px); padding: .4em 0 1.2em; }
+.arbol-din.entra > .asc, .arbol-din.entra > .fila-foco, .arbol-din.entra > .desc { animation: aparece .35s ease-out; }
+@keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .arbol-din.entra > * { animation: none !important; } }
+.arbol-din svg.lineas { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.arbol-din .trazo { fill: none; stroke: #a08b66; stroke-width: 1.4; }
+.arbol-din .trazo.verde { stroke: var(--linea-verde); stroke-width: 2.2; }
+.arbol-din .trazo.union { stroke: var(--sepia); stroke-width: 1.6; }
+
+.arbol-din .fila-asc { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); margin-bottom: 2.6em; }
+.arbol-din .hueco { display: flex; justify-content: center; align-items: flex-end; padding: 0 .22em; min-width: 0; }
+.arbol-din .nodo { position: relative; display: flex; align-items: center; gap: .4em; width: 100%; max-width: 13em; min-height: 4.7em; margin: 0; padding: .35em .5em; text-align: left; font: inherit; line-height: 1.2; color: var(--tinta); background: var(--papel-claro); border: 1px solid var(--linea); border-radius: var(--radio); box-shadow: 1px 2px 5px var(--sombra); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.arbol-din button.nodo:hover, .arbol-din button.nodo:focus-visible { border-color: var(--sepia); box-shadow: 2px 4px 10px var(--sombra); outline: none; z-index: 2; }
+.arbol-din .nodo img { flex: none; width: 2.6em; height: 3.4em; object-fit: cover; object-position: top; border: 1px solid var(--linea); filter: sepia(.45); }
+.arbol-din .nodo .txt { min-width: 0; display: flex; flex-direction: column; }
+.arbol-din .nodo .nom { font-family: "IM Fell English", Georgia, serif; font-size: 1.04em; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.arbol-din .nodo .fec { font-style: italic; color: var(--tinta-suave); font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arbol-din .nodo .docs { position: absolute; right: .3em; top: .15em; font-style: normal; font-size: .75em; color: var(--sepia); }
+.arbol-din .nodo .docs::before { content: "✎"; margin-right: .1em; }
+.arbol-din .nodo.naranjo { background: var(--naranja); border-color: var(--naranja-borde); }
+.arbol-din .nodo.naranjo .nom { color: var(--naranja-tinta); }
+.arbol-din .nodo.verde { border: 2px solid var(--linea-verde); }
+.arbol-din .nodo.verde:not(.naranjo) .nom { color: var(--linea-verde-tinta); }
+.arbol-din .nodo.privado { cursor: default; border-style: dashed; background: transparent; box-shadow: none; }
+.arbol-din .nodo.arriba::before { content: "▲"; position: absolute; top: -1.35em; left: 50%; transform: translateX(-50%); font-size: .72em; color: var(--naranja-borde); }
+.arbol-din .nodo.foco { max-width: 16em; min-height: 5.6em; font-size: 1.14em; box-shadow: 0 0 0 3px rgba(139, 58, 26, .22), 2px 4px 10px var(--sombra); }
+.arbol-din .nodo.foco .nom { -webkit-line-clamp: 4; }
+
+.arbol-din .fila-foco { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 18em) minmax(0, 1fr); align-items: center; column-gap: 1.6em; }
+.arbol-din .fila-foco .centro { display: flex; justify-content: center; }
+.arbol-din .fila-foco .izq { display: flex; justify-content: flex-end; }
+.arbol-din .fila-foco .der { display: flex; flex-direction: column; align-items: flex-start; gap: .6em; }
+.arbol-din .fila-foco .der .nodo { max-width: 13em; }
+.arbol-din .ver-hermanos, .arbol-din .desplegar { font-size: .86em; line-height: 1.2; padding: .2em .7em; color: var(--sepia); background: var(--papel-claro); border: 1px dashed var(--linea); border-radius: 1em; }
+.arbol-din .ver-hermanos:hover, .arbol-din .desplegar:hover { border-style: solid; border-color: var(--sepia); }
+
+.arbol-din .desc { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 2.6em 1.1em; padding-top: 2.8em; }
+.arbol-din .unidad { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; }
+.arbol-din .pareja { display: flex; flex-wrap: wrap; justify-content: center; gap: .6em 1.3em; max-width: 100%; }
+.arbol-din .pareja .nodo { width: 10.5em; }
+.arbol-din .unidad > .desplegar { margin-top: .45em; }
+.arbol-din .hijos { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 2.3em .8em; padding-top: 2.5em; max-width: 100%; }
+.arbol-din .hijos .pareja .nodo { width: 9.6em; font-size: .94em; min-height: 4.4em; }
+.arbol-din .sin-hijos { text-align: center; font-style: italic; color: var(--tinta-suave); margin: 1.5em 0 0; }
+
+/* ficha breve bajo el árbol */
+.ficha-breve { max-width: 760px; margin: .4rem auto 1.5rem; background: var(--papel-claro); border: 1px solid var(--linea); box-shadow: 2px 3px 8px var(--sombra); padding: 1rem 1.2rem .8rem; border-radius: var(--radio); }
+.ficha-breve:empty { display: none; }
+.ficha-breve .cab { display: flex; align-items: center; gap: 1rem; }
+.ficha-breve .retrato-mini { width: 70px; height: 90px; object-fit: cover; object-position: top; border: 1px solid var(--linea); filter: sepia(.4); flex: none; }
+.ficha-breve h2 { margin: 0; text-align: left; font-size: 1.55rem; }
+.ficha-breve h2::after { display: none; }
+.ficha-breve .fechas { margin: .1rem 0 0; font-style: italic; color: var(--tinta-suave); }
+.ficha-breve .resumen { margin: .7rem 0 .4rem; }
+.ficha-breve .texto { margin: .5rem 0; font-size: .95rem; color: var(--tinta-suave); }
+.ficha-breve .texto b { font-weight: 600; color: var(--tinta); }
+.ficha-breve dl { margin: .6rem 0; display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; }
+.ficha-breve dt { font-family: "IM Fell English SC", serif; color: var(--sepia); }
+.ficha-breve dd { margin: 0; min-width: 0; }
+.ficha-breve .enlace-persona { padding: 0; background: none; border: 0; color: var(--sepia); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; text-align: left; }
+.ficha-breve .enlace-persona:hover { color: var(--tinta); }
+.ficha-breve .fec, .ficha-breve .privado { font-style: italic; color: var(--tinta-suave); font-size: .9em; }
+.ficha-breve .acciones { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0 .4rem; }
+.ficha-breve .boton { display: inline-block; padding: .35rem .9rem; background: var(--sepia); color: var(--papel-claro); text-decoration: none; border-radius: var(--radio); }
+.ficha-breve .boton:hover { background: var(--tinta); color: var(--papel-claro); }
+.ficha-breve .boton.secundario { background: transparent; color: var(--sepia); border: 1px solid var(--sepia); }
+.ficha-breve .fuente { font-size: .82rem; font-style: italic; color: var(--tinta-suave); margin: .5rem 0 0; }
+@media (max-width: 560px) {
+  .ficha-breve { padding: .8rem .9rem; }
+  .ficha-breve dl { grid-template-columns: 1fr; gap: .1rem; }
+  .ficha-breve dd { margin-bottom: .4rem; }
+  .arbol-din .fila-foco { column-gap: .8em; }
+  .arbol-din .pareja .nodo { width: 9.4em; }
+}

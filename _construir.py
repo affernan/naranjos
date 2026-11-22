@@ -315,104 +315,39 @@ MAPA = '''<svg class="mapa" viewBox="0 0 900 300" role="img" aria-label="Rutas d
 </svg>'''.replace("BARCO", BARCO.replace('<svg class="barco" viewBox="0 0 64 40" aria-hidden="true">', "").replace("</svg>", ""))
 
 def portada():
-    import json
-    COLS = 10.0          # ancho del árbol en columnas
-    ANCHO = 0.94          # ancho de cada recuadro (en columnas)
-    FILA_EM = 8.6        # separación vertical entre filas (em)
-
-    # (id, fila, columna, nombre, fechas, ficha, clases)
-    V = "verde"
-    nodos = [
-        ("gregorio", 0, 0.5, "Gregorio Suárez Navarro Naranjo", "n. 1668", None, V),
-        ("hipolita", 0, 1.5, "Hipólita María de Montes de Oca y Valerón", "", None, V),
-        ("josem", 0, 2.5, "José Muñiz Ortiz", "", None, V),
-        ("encarnacion", 0, 3.5, "María de la Encarnación Suárez de la Mota", "", None, V),
-        ("luis", 1, 1.0, "Luis Manuel González Naranjo", "", None, V),
-        ("francisca", 1, 3.0, "Francisca Muñiz Suárez de la Mota", "", None, V),
-        ("salvadorg", 1, 4.5, "Salvador González", "", None, V),
-        ("mantonia", 1, 5.5, "María Antonia de la Fuente", "", None, V),
-        ("cayetano", 2, 2.0, "Cayetano Naranjo Muñiz", "", None, V),
-        ("margarita", 2, 5.0, "María Margarita González de la Fuente", "", None, V),
-        ("cubas", 2, 6.25, "Adrián José Nicolás de Cubas y Medina", "", None, V),
-        ("angeles", 2, 7.25, "María de los Ángeles de Ortega y Medina", "† 1773", None, V),
-        ("salvadorgn", 3, 3.5, "Salvador González Naranjo", "", None, V),
-        ("anarosalia", 3, 6.75, "Ana Rosalía de Cubas Ortega y Medina", "1773", None, V),
-        ("pedro", 3, 8.0, "Pedro de Alcántara Cabrera de Quintana", "", None, V),
-        ("isidra", 3, 9.0, "María Isidro de Ortega Padrón y Chil", "", None, V),
-        ("adrian-naranjo-cubas", 4, 5.125, None, "1799", "adrian-naranjo-cubas", V),
-        ("antonia-cabrera-padron", 4, 8.5, "Josefa Antonia Cabrera de Quintana y Padrón", "", "antonia-cabrera-padron", V),
-        ("otros", 5, 0.5, "Otros 12 hermanos", "Antonio, Patricio, María Hilaria, Leandra, Felipe…", "adrian-naranjo-cubas", "otros"),
-        ("salvador-naranjo-cabrera", 5, 1.5, "Salvador José Naranjo Cabrera", "1819", "salvador-naranjo-cabrera", ""),
-        ("francisco-javier-naranjo-cabrera", 5, 2.5, "Francisco Javier Naranjo Cabrera", "1820-1866", "francisco-javier-naranjo-cabrera", ""),
-        ("jose-naranjo-cabrera", 5, 3.5, "José Naranjo Cabrera", "1836-1896", "jose-naranjo-cabrera", ""),
-        ("manuel-naranjo-cabrera", 5, 4.5, "Manuel Naranjo Cabrera", "1839-1913", "manuel-naranjo-cabrera", ""),
-        ("juan-naranjo-cabrera", 5, 5.5, "Juan Naranjo Cabrera", "1841", "juan-naranjo-cabrera", ""),
-        ("felix-naranjo-cabrera", 5, 6.5, "Félix Naranjo Cabrera", "1843", "felix-naranjo-cabrera", V),
-        ("rosalia-rodriguez-valdes", 5, 7.5, "Rosalía Rodríguez Valdés", "Cuba", "rosalia-rodriguez-valdes", V),
-        ("adrian-naranjo-rodriguez", 6, 5.25, "Adrián Salvador Naranjo Rodríguez", "1877", "adrian-naranjo-rodriguez", ""),
-        ("agustin-naranjo-rodriguez", 6, 6.5, "Agustín Benito Naranjo Rodríguez", "1875 - h. 1950-55", "agustin-naranjo-rodriguez", V),
-        ("quirina-fernandez-fernandez", 6, 7.5, "Quirina Úrsula Fernández Fernández", "San Luis (Cuba)", "quirina-fernandez-fernandez", V),
-        ("natalio-naranjo-rodriguez", 6, 8.75, "Natalio Naranjo Rodríguez", "1878", "natalio-naranjo-rodriguez", ""),
-        ("juana-naranjo-fernandez", 7, 4.5, "Juana Naranjo Fernández", "1908-2012", "juana-naranjo-fernandez", V),
-        ("felicita-naranjo-fernandez", 7, 5.5, "Felicita Naranjo Fernández", "", "felicita-naranjo-fernandez", V),
-        ("inocencia-naranjo-fernandez", 7, 6.5, "Inocencia «Nina» Naranjo Fernández", "1915-2010", "inocencia-naranjo-fernandez", V),
-        ("hugo-fernandez-arada", 7, 7.5, "Hugo Ángel Fernández Arada", "1913 - h. 1984-89", "hugo-fernandez-arada", V),
-        ("felix-naranjo-fernandez", 7, 8.5, "Félix Naranjo Fernández", "h. 1904-1905", "felix-naranjo-fernandez", V),
-        ("jose-naranjo-fernandez", 7, 9.5, "José Naranjo Fernández", "1914-1989", "jose-naranjo-fernandez", V),
-        ("gen6", 8, 7.0, "Cinco hijos", "1942-1955 · personas vivas", None, V + " otros"),
+    import sys
+    sys.path.insert(0, str(RAIZ))
+    import _datos_arbol
+    personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js")
+    atajos = [
+        ("diego-perez-naranjo", "Los primeros Naranjo", "h. 1470"),
+        ("gregorio-suarez-navarro-naranjo", "Gregorio Suárez Navarro Naranjo", "1668"),
+        ("adrian-naranjo-cubas", "Adrián Naranjo y Cubas y sus 18 hijos", "1799"),
+        ("felix-naranjo-cabrera", "Félix y Rosalía", "1870"),
+        ("salvador-naranjo-cabrera", "La rama de Venezuela", "h. 1837"),
+        ("patricio-naranjo-cabrera", "Los Naranjo de Puerto Príncipe", "Cuba"),
+        ("agustin-naranjo-rodriguez", "La rama de Pinar del Río", "Cuba"),
     ]
-    enlaces = [
-        (["gregorio", "hipolita"], ["luis"]),
-        (["josem", "encarnacion"], ["francisca"]),
-        (["luis", "francisca"], ["cayetano"]),
-        (["salvadorg", "mantonia"], ["margarita"]),
-        (["cayetano", "margarita"], ["salvadorgn"]),
-        (["cubas", "angeles"], ["anarosalia"]),
-        (["salvadorgn", "anarosalia"], ["adrian-naranjo-cubas"]),
-        (["pedro", "isidra"], ["antonia-cabrera-padron"]),
-        (["adrian-naranjo-cubas", "antonia-cabrera-padron"], ["otros", "salvador-naranjo-cabrera", "francisco-javier-naranjo-cabrera", "jose-naranjo-cabrera", "manuel-naranjo-cabrera", "juan-naranjo-cabrera", "felix-naranjo-cabrera"]),
-        (["felix-naranjo-cabrera", "rosalia-rodriguez-valdes"], ["adrian-naranjo-rodriguez", "agustin-naranjo-rodriguez", "natalio-naranjo-rodriguez"]),
-        (["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez"], ["juana-naranjo-fernandez", "felicita-naranjo-fernandez", "inocencia-naranjo-fernandez", "felix-naranjo-fernandez", "jose-naranjo-fernandez"]),
-        (["inocencia-naranjo-fernandez", "hugo-fernandez-arada"], ["gen6"]),
-    ]
-    verdes = [n[0] for n in nodos if V in n[6]]
-
-    piezas = []
-    for id_, fila, col, nombre, fechas, ficha, clases in nodos:
-        if ficha and not nombre:
-            nombre = P[ficha]["nombre"]
-        foto = P[ficha].get("foto") if ficha and ficha in P else None
-        docs = len(P[ficha]["docs"]) if ficha and ficha in P else 0
-        izq = (col - ANCHO / 2) / COLS * 100
-        estilo = f'left:{izq:.3f}%;top:{fila * FILA_EM:.2f}em;width:{ANCHO / COLS * 100:.3f}%'
-        titulo = html.escape(nombre + (f" ({fechas})" if fechas else ""))
-        img = f'<img src="{foto}" alt="" loading="lazy">' if foto else ""
-        marca = f'<i class="docs" title="{docs} documento(s)">{docs}</i>' if docs else ""
-        cuerpo = f'{img}<span class="txt"><span class="nom">{nombre}</span><span class="fec">{fechas}</span></span>{marca}'
-        es_naranjo = "Naranjo" in nombre or id_ in ("otros", "gen6")
-        cls = "nodo " + clases + (" naranjo" if es_naranjo else "") + (" con-foto" if foto else "")
-        if ficha:
-            piezas.append(f'<a class="{cls}" data-id="{id_}" href="personas/{ficha}.html" style="{estilo}" title="{titulo}">{cuerpo}</a>')
-        else:
-            piezas.append(f'<span class="{cls}" data-id="{id_}" style="{estilo}" title="{titulo}">{cuerpo}</span>')
-    alto = 8 * FILA_EM + 5.2
-
-    datos = json.dumps([dict(p=a, h=b) for a, b in enlaces])
+    botones = "".join(f'<button type="button" data-id="{i}"><b>{t}</b><small>{f}</small></button>' for i, t, f in atajos if i in personas)
     contenido = f"""
 <section class="portada">
   <div class="escudo-grande"><img src="img/escudo-naranjo.png" alt="Escudo de armas de los Naranjo: en campo de oro, un naranjo de sinople frutado y un leopardo pasante al pie del tronco"><p>«De oro, un árbol de sinople, frutado de oro, y un leopardo de su color natural, pasante al pie del tronco.»<br><span>Armas de los Naranjo, según <i>Los Naranjos</i></span></p></div>
   <div class="presentacion">
     <h1>Árbol genealógico</h1>
-    <p class="entradilla">Los Naranjo de Telde, documentados en Gran Canaria desde el siglo XVII. En el XIX varios hermanos Naranjo Cabrera cruzaron el Atlántico hacia Venezuela y Cuba, y una de sus ramas echó raíces en Pinar del Río.</p>
-    <p class="instrucciones">Pulse sobre un nombre para abrir su ficha, con documentos, fotos y recortes de prensa. Las líneas unen a cada pareja con sus hijos.</p>
+    <p class="entradilla">Los Naranjo de Telde, una familia de Gran Canaria con antepasados conocidos desde finales del siglo XV. En el XIX varios hermanos Naranjo Cabrera cruzaron el Atlántico hacia Venezuela y Cuba, y una de sus ramas echó raíces en Pinar del Río.</p>
+    <p class="instrucciones">Pulse sobre cualquier persona para ponerla en el centro: arriba aparecen sus padres y abuelos, a su lado su pareja y debajo sus hijos. Más abajo verá su ficha, con enlaces a los documentos y fotos.</p>
     <div class="leyenda"><span><i class="muestra naranjo"></i>Apellido Naranjo</span><span><i class="muestra"></i>Otros apellidos</span><span><i class="muestra borde-verde"></i>Rama que llegó a Pinar del Río (Cuba)</span></div>
   </div>
 </section>
-<div class="pedigri" style="height:{alto:.1f}em" data-enlaces='{datos}' data-verdes='{json.dumps(verdes)}'>
-{chr(10).join(piezas)}
+<div class="herramientas">
+  <form class="buscador" role="search" autocomplete="off"><label for="buscar-persona">Buscar a una persona</label><input id="buscar-persona" type="search" list="lista-personas" placeholder="Escriba un nombre: Natalio, Patricio, Tascón…"><datalist id="lista-personas"></datalist><button type="submit">Ir</button></form>
+  <nav class="atajos" aria-label="Ir a una rama de la familia">{botones}</nav>
 </div>
+<div id="arbol" class="arbol-din" data-inicio="felix-naranjo-cabrera" aria-live="polite"><noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript></div>
+<section id="ficha-breve" class="ficha-breve" aria-live="polite"></section>
+<script src="arbol-datos.js"></script>
 <script src="arbol.js"></script>
-<p class="nota-arbol">Las generaciones más antiguas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. Solo se publican datos de personas fallecidas.</p>
+<p class="nota-arbol">{len([x for x in personas.values() if not x.get("priv")])} personas. Las generaciones antiguas y las ramas de Telde y Las Palmas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. La rama de Pinar del Río, la de Venezuela y los padres de Quirina son de nuestra investigación. Solo se publican datos de personas fallecidas.</p>
 
 <h2>Las rutas de la familia</h2>
 {MAPA}
@@ -434,7 +369,7 @@ def ficha(slug):
     aviso = '<p class="aviso">Ficha provisional: el parentesco con la familia está <b>sin confirmar</b>.</p>' if p.get("dudosa") else ""
     pie = f'<span class="pie-retrato">{p["pie_foto"]}</span>' if p.get("pie_foto") else ""
     retrato = f'<div><a class="retrato" href="{base}{p["foto"]}" target="_blank" title="Ver la foto completa"><img src="{base}{p["foto"]}" alt="Retrato de {html.escape(p["nombre"])}"></a>{pie}</div>' if p.get("foto") else ""
-    partes = [f"""<p class="migas"><a href="../index.html">Árbol</a> › <a href="../personas.html">Personas</a> › {p["nombre"]}</p>
+    partes = [f"""<p class="migas"><a href="../index.html">Árbol</a> › <a href="../personas.html">Personas</a> › {p["nombre"]} · <a href="../index.html#{slug}">ver en el árbol</a></p>
 <div class="encabezado-ficha{" con-retrato" if retrato else ""}">
 {retrato}
 <div>
