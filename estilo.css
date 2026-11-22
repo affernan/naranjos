@@ -1,0 +1,343 @@
+/* Los Naranjo de Telde — estilo «papel antiguo» */
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --papel: #f1e4c3;
+  --papel-claro: #f8efd8;
+  --papel-oscuro: #e3cfa2;
+  --tinta: #3b2a1a;
+  --tinta-suave: #6b5236;
+  --sepia: #8b3a1a;          /* rojo de tinta antigua */
+  --linea: #b89b6a;
+  --sombra: rgba(70, 45, 15, .25);
+  --radio: 3px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  color: var(--tinta);
+  font: 19px/1.6 "EB Garamond", Georgia, "Times New Roman", serif;
+  background-color: var(--papel);
+  /* grano del papel + manchas de los bordes */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .1  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at center, rgba(255,250,235,.55) 0%, rgba(255,250,235,0) 55%),
+    radial-gradient(ellipse at top left, rgba(120,80,30,.22), transparent 45%),
+    radial-gradient(ellipse at bottom right, rgba(120,80,30,.25), transparent 50%);
+  background-attachment: fixed;
+}
+a { color: var(--sepia); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--tinta); }
+
+h1, h2, h3, .marca { font-family: "IM Fell English", "EB Garamond", Georgia, serif; font-weight: normal; }
+h1 { font-size: 2.4rem; line-height: 1.15; margin: .3rem 0 .4rem; text-align: center; }
+h2 { font-size: 1.7rem; margin: 2.4rem 0 .6rem; text-align: center; }
+h2::after { content: "❦"; display: block; color: var(--linea); font-size: 1.1rem; margin-top: .1rem; }
+h3 { font-size: 1.3rem; margin: 1.4rem 0 .3rem; }
+
+/* Cabecera */
+header.sitio { border-bottom: 3px double var(--linea); }
+header.sitio .envoltura { text-align: center; padding-top: 1.4rem; padding-bottom: .9rem; }
+header.sitio .marca { display: inline-block; font-size: 2rem; color: var(--tinta); text-decoration: none; letter-spacing: .02em; }
+header.sitio .marca span { color: var(--sepia); font-style: italic; }
+header.sitio .lema { display: block; font-style: italic; color: var(--tinta-suave); font-size: 1rem; margin-top: .1rem; }
+nav.menu { display: flex; flex-wrap: wrap; justify-content: center; gap: .2rem 1.3rem; margin-top: .7rem;
+  font-family: "IM Fell English SC", "EB Garamond", serif; font-size: 1.05rem; }
+nav.menu a { text-decoration: none; color: var(--tinta-suave); padding: .1rem 0; border-bottom: 1px solid transparent; }
+nav.menu a:hover, nav.menu a[aria-current="page"] { color: var(--sepia); border-bottom-color: var(--sepia); }
+
+.envoltura { max-width: 1000px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+main { padding: 1.4rem 0 3rem; }
+p.entradilla { font-size: 1.12rem; font-style: italic; color: var(--tinta-suave); max-width: 44rem; margin: .2rem auto 1rem; text-align: center; }
+
+/* Fichas */
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.1rem; margin: 1.2rem 0; }
+.tarjeta { background: var(--papel-claro); border: 1px solid var(--linea); box-shadow: 2px 3px 8px var(--sombra); padding: 1rem 1.15rem; border-radius: var(--radio); }
+.tarjeta h3 { margin-top: 0; }
+.tarjeta p { margin: .35rem 0; }
+.tarjeta .fechas { font-style: italic; color: var(--tinta-suave); }
+
+.aviso { background: var(--papel-claro); border: 1px dashed var(--sepia); padding: .8rem 1rem; margin: 1.2rem 0; }
+.cita { margin: 1rem 1.5rem; padding: .1rem 0 .1rem 1rem; border-left: 2px solid var(--linea); font-style: italic; }
+.etiqueta { display: inline-block; font-size: .8rem; font-style: italic; padding: 0 .45rem; border: 1px solid var(--linea); border-radius: 2px; color: var(--sepia); vertical-align: 1px; }
+
+/* Recortes de prensa: como pegados en un álbum */
+figure { margin: 1.8rem auto; max-width: 760px; background: var(--papel-claro); border: 1px solid var(--linea); padding: .9rem .9rem .7rem; box-shadow: 3px 4px 10px var(--sombra); transform: rotate(-.4deg); }
+figure:nth-of-type(even) { transform: rotate(.4deg); }
+figure img { display: block; max-width: 100%; height: auto; margin: 0 auto; filter: sepia(.35) contrast(1.05); }
+figure img.alta { max-height: 900px; width: auto; }
+figcaption { font-size: .95rem; font-style: italic; color: var(--tinta-suave); margin-top: .6rem; text-align: center; }
+
+/* Tablas */
+.tabla { overflow-x: auto; margin: 1rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: 1rem; background: var(--papel-claro); box-shadow: 2px 3px 8px var(--sombra); }
+th, td { text-align: left; vertical-align: top; padding: .5rem .7rem; border-bottom: 1px solid var(--papel-oscuro); }
+th { font-family: "IM Fell English SC", serif; font-weight: normal; color: var(--sepia); border-bottom: 2px solid var(--linea); white-space: nowrap; }
+td.fecha { white-space: nowrap; font-variant-numeric: oldstyle-nums tabular-nums; }
+
+/* ---------- Árbol genealógico (de arriba abajo) ---------- */
+.lienzo { overflow-x: auto; padding: 1rem 0 1.5rem; margin: 0 -16px; }
+.arbol { display: inline-block; min-width: 100%; text-align: center; padding: 0 16px; }
+.arbol ul { position: relative; display: flex; justify-content: center; margin: 0; padding: 1.6rem 0 0; list-style: none; }
+.arbol li { position: relative; padding: 1.6rem .35rem 0; display: flex; flex-direction: column; align-items: center; }
+/* líneas */
+.arbol li::before, .arbol li::after { content: ""; position: absolute; top: 0; width: 50%; height: 1.6rem; border-top: 1.5px solid var(--linea); }
+.arbol li::before { right: 50%; }
+.arbol li::after { left: 50%; border-left: 1.5px solid var(--linea); }
+.arbol li:only-child::before, .arbol li:only-child::after { display: none; }
+.arbol li:only-child { padding-top: 0; }
+.arbol li:first-child::before, .arbol li:last-child::after { border: 0 none; }
+.arbol li:last-child::before { border-right: 1.5px solid var(--linea); }
+.arbol ul ul::before { content: ""; position: absolute; top: 0; left: 50%; height: 1.6rem; border-left: 1.5px solid var(--linea); }
+.arbol > ul { padding-top: 0; }
+.arbol > ul > li { padding-top: 0; }
+.arbol > ul > li::before, .arbol > ul > li::after { display: none; }
+
+/* parejas */
+.pareja { display: inline-flex; align-items: stretch; gap: 0; }
+.pareja .union { align-self: center; padding: 0 .3rem; color: var(--sepia); font-family: "IM Fell English", serif; font-size: 1.2rem; }
+.persona { display: inline-block; min-width: 8.5rem; max-width: 13rem; background: var(--papel-claro); border: 1px solid var(--linea); box-shadow: 1px 2px 5px var(--sombra); padding: .4rem .55rem; border-radius: var(--radio); line-height: 1.25; }
+.persona b { display: block; font-family: "IM Fell English", serif; font-weight: normal; font-size: 1.02rem; }
+.persona small { display: block; font-size: .82rem; font-style: italic; color: var(--tinta-suave); margin-top: .15rem; }
+.persona.clave { border: 1.5px solid var(--sepia); background: #fbf3df; }
+.persona.clave b { color: var(--sepia); }
+.persona.tenue { opacity: .85; }
+.persona.otros { min-width: 11rem; max-width: 15rem; }
+.nota-arbol { text-align: center; font-style: italic; color: var(--tinta-suave); font-size: .95rem; max-width: 46rem; margin: .4rem auto; }
+.leyenda { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem 1.4rem; font-size: .92rem; color: var(--tinta-suave); margin: .2rem 0 .6rem; }
+.leyenda .muestra { display: inline-block; width: 1.1rem; height: .8rem; vertical-align: -1px; margin-right: .35rem; border: 1px solid var(--linea); background: var(--papel-claro); }
+.leyenda .muestra.clave { border: 1.5px solid var(--sepia); background: #fbf3df; }
+
+footer { border-top: 3px double var(--linea); color: var(--tinta-suave); font-size: .95rem; font-style: italic; padding: 1.2rem 0 2rem; text-align: center; }
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  h1 { font-size: 1.9rem; }
+  header.sitio .marca { font-size: 1.6rem; }
+  figure, figure:nth-of-type(even) { transform: none; }
+}
+
+/* ================= Añadidos: cabecera, portada, mapa, fichas ================= */
+header.sitio .cabecera { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .3rem 1rem; text-align: left; }
+header.sitio .sello img { width: 54px; height: auto; display: block; filter: drop-shadow(1px 2px 2px var(--sombra)); }
+header.sitio .titulos { line-height: 1.2; }
+header.sitio nav.menu { grid-column: 1 / -1; justify-content: flex-start; margin-top: .5rem; }
+body.inicio header.sitio .sello { display: none; }
+body.inicio header.sitio .cabecera { grid-template-columns: 1fr; }
+
+.portada { display: grid; grid-template-columns: minmax(180px, 260px) 1fr; gap: 1.5rem 2.2rem; align-items: center; margin: .6rem 0 1rem; }
+.escudo-grande { text-align: center; }
+.escudo-grande img { width: 100%; max-width: 240px; height: auto; filter: drop-shadow(2px 4px 6px var(--sombra)); }
+.escudo-grande p { font-size: .9rem; font-style: italic; color: var(--tinta-suave); margin: .5rem 0 0; line-height: 1.35; }
+.escudo-grande p span { font-size: .8rem; }
+.presentacion h1 { text-align: left; }
+.presentacion .entradilla { text-align: left; margin-left: 0; }
+.instrucciones { font-size: .95rem; color: var(--sepia); font-style: italic; }
+.instrucciones::before { content: "☞ "; }
+
+/* Mapa de rutas */
+svg.mapa { display: block; width: 100%; height: auto; margin: .5rem 0 1rem; color: var(--tinta); border: 1px solid var(--linea); background: rgba(255,248,230,.45); box-shadow: inset 0 0 40px rgba(120,80,30,.18); }
+svg.mapa .tierra { fill: var(--papel-oscuro); stroke: var(--linea); stroke-width: 1.2; }
+svg.mapa .islas circle { fill: var(--sepia); }
+svg.mapa .ruta { fill: none; stroke: var(--sepia); stroke-width: 2; stroke-dasharray: 7 6; }
+svg.mapa .rotulo { font-family: "IM Fell English", serif; font-size: 20px; fill: var(--tinta); }
+svg.mapa .rotulo.pequeno { font-size: 14px; fill: var(--tinta-suave); }
+svg.mapa .rotulo.it { font-style: italic; fill: var(--sepia); }
+svg.mapa .rosa { font-size: 30px; fill: var(--linea); }
+svg.mapa .nave { color: var(--tinta); }
+svg.barco { width: 44px; height: 28px; color: var(--tinta-suave); }
+svg.barco.pie { display: block; margin: 0 auto .4rem; opacity: .7; }
+
+/* Nodos del árbol como enlaces */
+a.persona { color: var(--tinta); text-decoration: none; transition: transform .15s, box-shadow .15s; }
+a.persona:hover, a.persona:focus-visible { transform: translateY(-2px); box-shadow: 2px 5px 10px var(--sombra); border-color: var(--sepia); outline: none; }
+.persona .miniatura { display: block; width: 46px; height: 58px; object-fit: cover; object-position: top; margin: 0 auto .3rem; border: 1px solid var(--linea); filter: sepia(.5); }
+.persona .marca-docs { display: inline-block; font-style: normal; font-size: .7rem; margin-top: .25rem; padding: 0 .35rem; border: 1px solid var(--linea); border-radius: 2px; color: var(--sepia); }
+.persona.dudosa { border-style: dashed; }
+.leyenda .muestra.dudosa { border-style: dashed; }
+.nota-gen { align-self: center; font-size: .85rem; font-style: italic; color: var(--tinta-suave); padding-left: .5rem; }
+.lugar { display: block; font-size: .78rem; font-style: italic; color: var(--sepia); margin-top: .25rem; }
+
+/* Fichas */
+.migas { font-size: .95rem; color: var(--tinta-suave); margin: 0 0 .4rem; }
+.encabezado-ficha.con-retrato { display: grid; grid-template-columns: 170px 1fr; gap: 1.4rem; align-items: start; }
+.encabezado-ficha h1, .encabezado-ficha .entradilla { text-align: left; margin-left: 0; }
+.retrato img { width: 100%; height: auto; border: 6px solid #fbf6e9; box-shadow: 2px 4px 10px var(--sombra); transform: rotate(-1.5deg); filter: sepia(.35); }
+.resumen { font-size: 1.1rem; }
+.ficha { display: grid; grid-template-columns: 1fr 300px; gap: 0 2rem; align-items: start; }
+.ficha h2 { text-align: left; font-size: 1.45rem; }
+.ficha h2::after { display: none; }
+.ficha .lateral { background: var(--papel-claro); border: 1px solid var(--linea); box-shadow: 2px 3px 8px var(--sombra); padding: .4rem 1.1rem 1rem; margin-top: 2.2rem; }
+.ficha .lateral h3 { font-size: 1.15rem; margin-top: .9rem; color: var(--sepia); }
+table.datos th { width: 34%; white-space: normal; }
+ul.lista { margin: .3rem 0; padding-left: 1.1rem; }
+ul.lista li { margin: .3rem 0; }
+ul.lista .fechas { font-size: .88rem; font-style: italic; color: var(--tinta-suave); }
+ul.pendiente li::marker { content: "✎  "; color: var(--sepia); }
+
+/* Documentos */
+figure.documento { max-width: none; transform: none; }
+figure.documento .imagenes { display: flex; flex-wrap: wrap; gap: .8rem; justify-content: center; }
+figure.documento .imagenes a { flex: 1 1 260px; max-width: 520px; }
+figure.documento .imagenes img { width: 100%; max-height: 640px; object-fit: contain; border: 1px solid var(--papel-oscuro); background: #fff; }
+figure.documento figcaption { text-align: left; }
+figure.documento figcaption b { font-style: normal; color: var(--tinta); font-family: "IM Fell English", serif; font-weight: normal; font-size: 1.1rem; }
+figure.documento .transcripcion { display: block; margin: .3rem 0; color: var(--tinta); }
+figure.documento .fuente { font-size: .88rem; }
+
+/* Tarjetas-enlace (índice de personas) */
+a.tarjeta.enlace { text-decoration: none; color: var(--tinta); transition: transform .15s; }
+a.tarjeta.enlace:hover { transform: translateY(-2px); border-color: var(--sepia); }
+a.tarjeta.enlace.clave { border-color: var(--sepia); }
+a.tarjeta .cuenta { font-size: .85rem; color: var(--sepia); font-style: italic; }
+
+@media (max-width: 760px) {
+  .portada { grid-template-columns: 1fr; text-align: center; }
+  .escudo-grande img { max-width: 170px; }
+  .presentacion h1, .presentacion .entradilla { text-align: center; margin-left: auto; }
+  .ficha { grid-template-columns: 1fr; }
+  .ficha .lateral { margin-top: 1.2rem; }
+  .encabezado-ficha.con-retrato { grid-template-columns: 110px 1fr; gap: 1rem; }
+  svg.mapa .rotulo.pequeno { font-size: 18px; }
+}
+
+/* ===== Árbol por generaciones (portada) ===== */
+.arbol-generaciones { margin: 1rem 0 0; }
+.generacion { text-align: center; }
+.generacion h3.gen { margin: 0 0 .5rem; font-size: 1rem; font-family: "IM Fell English SC", serif; color: var(--sepia); letter-spacing: .04em; }
+.generacion h3.gen span { background: var(--papel-oscuro); padding: .1rem .8rem; border-radius: 2px; }
+.generacion .nota-fila { display: block; font-family: "EB Garamond", serif; font-style: italic; font-size: .9rem; color: var(--tinta-suave); letter-spacing: 0; margin-top: .2rem; }
+.fila { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: .9rem 1.4rem; }
+.grupo { display: flex; flex-direction: column; align-items: center; }
+.grupo .titulo-grupo { font-size: .85rem; font-style: italic; color: var(--tinta-suave); margin-bottom: .3rem; }
+.hermanos { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; }
+.pareja { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: .2rem; }
+.pareja .union { font-size: 1.5rem; color: var(--sepia); padding: 0 .35rem; line-height: 1; }
+.conector { width: 0; height: 1.6rem; margin: .5rem auto; border-left: 2px solid var(--linea); position: relative; }
+.conector::after { content: ""; position: absolute; left: -5px; bottom: -4px; width: 8px; height: 8px; border-right: 2px solid var(--linea); border-bottom: 2px solid var(--linea); transform: rotate(45deg); }
+.generacion .persona { min-width: 9rem; max-width: 12.5rem; }
+.hermanos-felix { margin-top: 2.2rem; padding: 0 0 .5rem; text-align: center; }
+.hermanos-felix .fila { margin-top: .6rem; }
+.portada .leyenda { justify-content: flex-start; }
+@media (max-width: 760px) { .portada .leyenda { justify-content: center; } .generacion .persona { min-width: 8rem; } }
+
+/* ===== Sin desplazamiento horizontal en ningún caso ===== */
+html, body { overflow-x: hidden; }
+.tabla, .lienzo { overflow: visible; margin-left: 0; margin-right: 0; }
+table { table-layout: auto; word-wrap: break-word; overflow-wrap: anywhere; }
+th { white-space: normal; }
+img, svg { max-width: 100%; }
+.generacion h3.gen span { background: none; padding: 0; }
+.generacion h3.gen > span:first-child { background: var(--papel-oscuro); padding: .1rem .8rem; border-radius: 2px; }
+.generacion .nota-fila { background: none !important; }
+@media (max-width: 640px) {
+  table, thead, tbody, tr, th, td { display: block; width: 100%; }
+  thead { display: none; }
+  tr { border-bottom: 1px solid var(--linea); padding: .4rem 0; }
+  th, td { border: 0; padding: .15rem .7rem; }
+  td.fecha { font-weight: 600; color: var(--sepia); white-space: normal; }
+  table.datos th { width: auto; padding-top: .5rem; }
+}
+
+/* Rótulos de rama y bloque de ampliación */
+.generacion.rama h3.gen > span:first-child { background: none; border: 1px solid var(--linea); }
+.ampliacion { margin-top: 2.6rem; padding-top: .5rem; border-top: 3px double var(--linea); }
+.ampliacion .arbol-generaciones { margin-top: .6rem; }
+.pie-retrato { display: block; font-size: .8rem; font-style: italic; color: var(--tinta-suave); text-align: center; margin-top: .5rem; }
+
+/* ===== Línea directa (verde del naranjo) ===== */
+:root { --linea-verde: #4d6a24; --linea-verde-claro: #eef0d8; --linea-verde-tinta: #34481a; }
+.persona.linea { background: var(--linea-verde-claro); border: 1.5px solid var(--linea-verde); }
+.persona.linea b { color: var(--linea-verde-tinta); }
+.persona.linea small { color: #5a6a3a; }
+.persona.linea .marca-docs { border-color: var(--linea-verde); color: var(--linea-verde-tinta); }
+a.persona.linea:hover { border-color: var(--linea-verde-tinta); }
+.persona.linea .miniatura { border-color: var(--linea-verde); }
+.grupo.en-linea .union { color: var(--linea-verde); }
+.grupo.en-linea .lugar { color: var(--linea-verde); }
+.conector.linea { border-left-color: var(--linea-verde); }
+.conector.linea::after { border-color: var(--linea-verde); }
+.leyenda .muestra.linea { background: var(--linea-verde-claro); border: 1.5px solid var(--linea-verde); }
+.hermanos-de { max-width: 100%; }
+.hermanos-de .titulo-grupo { margin-top: .2rem; }
+.hermanos-de .persona { min-width: 7.5rem; max-width: 10.5rem; }
+.hermanos-de .persona b { font-size: .95rem; }
+
+/* ===== Árbol con líneas (portada) ===== */
+.arbol-generaciones { position: relative; margin-top: 1.2rem; }
+svg.lineas { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; overflow: visible; }
+svg.lineas .trazo { fill: none; stroke: var(--linea); stroke-width: 2; stroke-linejoin: round; }
+svg.lineas .trazo.verde { stroke: var(--linea-verde); stroke-width: 2.6; }
+svg.lineas .nudo { fill: var(--linea); }
+svg.lineas .nudo.verde { fill: var(--linea-verde); }
+.arbol-generaciones .generacion { position: relative; z-index: 1; margin: 0 0 3.4rem; }
+.arbol-generaciones .generacion:last-child { margin-bottom: 1rem; }
+.arbol-generaciones h3.gen { text-align: left; margin: 0 0 .5rem; font-size: .92rem; }
+.arbol-generaciones h3.gen > span:first-child { background: var(--papel-oscuro); padding: .05rem .6rem; }
+.arbol-generaciones .nota-fila { display: inline; margin-left: .6rem; font-size: .85rem; }
+.arbol-generaciones .persona { position: relative; z-index: 1; min-width: 7.5rem; max-width: 10rem; padding: .35rem .5rem; }
+.arbol-generaciones .persona b { font-size: .95rem; }
+.arbol-generaciones .persona small { font-size: .76rem; }
+.arbol-generaciones .fila { gap: .8rem 1.1rem; }
+.arbol-generaciones .grupo { position: relative; z-index: 1; }
+.arbol-generaciones .lugar { background: transparent; }
+.hermanos-caja { max-width: 17rem !important; text-align: left; }
+.hermanos-caja b { text-align: center; }
+.hermanos-caja small.enlaces { font-style: normal; color: var(--tinta); margin: .3rem 0; }
+.hermanos-caja small.enlaces a { color: var(--sepia); }
+.hermanos-caja small.enlaces i { color: var(--tinta-suave); font-size: .7rem; }
+@media (max-width: 640px) {
+  .arbol-generaciones .persona { min-width: 6.5rem; max-width: 8.5rem; }
+  .arbol-generaciones .nota-fila { display: block; margin: .15rem 0 0; }
+  .arbol-generaciones .generacion { margin-bottom: 2.8rem; }
+}
+.arbol-generaciones h3.gen { position: relative; z-index: 2; display: inline-block; background: rgba(241, 228, 195, .92); padding-right: .4rem; }
+.arbol-generaciones .pareja .union { position: relative; z-index: 2; }
+.arbol-generaciones .lugar { position: relative; z-index: 2; background: rgba(241, 228, 195, .85); padding: 0 .3rem; }
+.arbol-generaciones .generacion:has([data-id="g-inocencia"]) .persona { min-width: 6.6rem; max-width: 8.1rem; }
+.arbol-generaciones .generacion:has([data-id="g-inocencia"]) .fila { gap: .8rem .7rem; }
+
+/* ===== Árbol estilo pedigrí (portada) ===== */
+.pedigri {
+  position: relative;
+  /* el árbol ocupa casi todo el ancho de la ventana, sin desbordar nunca */
+  width: min(1240px, calc(100vw - 40px));
+  left: 50%; transform: translateX(-50%);
+  font-size: clamp(6.5px, 1.02vw, 12.5px);
+  margin: 1.5rem 0 1rem;
+}
+.pedigri svg.lineas { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.pedigri svg.lineas .trazo { fill: none; stroke: #a08b66; stroke-width: 1.4; }
+.pedigri svg.lineas .trazo.verde { stroke: var(--linea-verde); stroke-width: 2; }
+.pedigri .nodo {
+  position: absolute; height: 5.2em; display: flex; align-items: center; gap: .45em;
+  padding: .4em .5em; box-sizing: border-box; overflow: hidden;
+  background: var(--papel-claro); border: 1px solid var(--linea); border-radius: 3px;
+  box-shadow: 1px 2px 4px var(--sombra); color: var(--tinta); text-decoration: none; line-height: 1.2;
+}
+.pedigri a.nodo:hover, .pedigri a.nodo:focus-visible { border-color: var(--sepia); box-shadow: 2px 4px 9px var(--sombra); z-index: 2; outline: none; }
+.pedigri .nodo.verde { background: var(--linea-verde-claro); border: 1.4px solid var(--linea-verde); }
+.pedigri .nodo.otros { border-style: dashed; }
+.pedigri .nodo img { width: 3.4em; height: 4.2em; object-fit: cover; object-position: top; flex: none; border: 1px solid var(--linea); filter: sepia(.45); }
+.pedigri .txt { min-width: 0; display: flex; flex-direction: column; }
+.pedigri .nom { font-family: "IM Fell English", Georgia, serif; font-size: 1.08em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pedigri .verde .nom { color: var(--linea-verde-tinta); }
+.pedigri .fec { font-style: italic; color: var(--tinta-suave); font-size: .92em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pedigri .docs { position: absolute; right: .3em; top: .2em; font-style: normal; font-size: .75em; color: var(--sepia); }
+.pedigri .docs::before { content: "✎"; margin-right: .1em; }
+.leyenda .muestra.linea { background: var(--linea-verde-claro); border: 1.5px solid var(--linea-verde); }
+.pedigri .nodo { height: 5.8em; padding: .35em .45em; gap: .35em; }
+.pedigri .nodo img { width: 2.8em; height: 4.4em; }
+.pedigri .nom { -webkit-line-clamp: 3; font-size: 1.04em; }
+
+/* Apellido Naranjo: recuadro naranja; rama de Pinar del Río: borde verde */
+:root { --naranja: #f6d3a4; --naranja-borde: #c97a2b; --naranja-tinta: #7a3d0c; }
+.pedigri .nodo.verde { background: var(--papel-claro); border: 1.6px solid var(--linea-verde); }
+.pedigri .nodo.naranjo { background: var(--naranja); border-color: var(--naranja-borde); }
+.pedigri .nodo.naranjo.verde { border: 2px solid var(--linea-verde); }
+.pedigri .nodo.naranjo .nom { color: var(--naranja-tinta); }
+.pedigri .nodo.verde:not(.naranjo) .nom { color: var(--linea-verde-tinta); }
+.leyenda .muestra.naranjo { background: var(--naranja); border: 1px solid var(--naranja-borde); }
+.leyenda .muestra.borde-verde { background: transparent; border: 2px solid var(--linea-verde); }
