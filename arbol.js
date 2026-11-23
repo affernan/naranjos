@@ -541,11 +541,19 @@
     sucesos.forEach(function (s) {
       var li2 = $('li', 'gn-suceso' + (s.q ? '' : ' propio'));
       var col = $('div', 'gn-cuando');
-      col.appendChild($('b', '', String(anio(s.fecha))));
-      var resto = s.fecha.replace(/\s*\d{4}.*$/, '').replace(/^h\.\s*/, 'h. ');
-      if (resto && resto !== 'h.') col.appendChild($('span', '', resto));
+      var aprox = /^(h\.|entre)/.test(s.fecha);
+      col.appendChild($('b', '', (aprox ? 'h. ' : '') + anio(s.fecha)));
+      var resto = s.fecha.replace(/\s*\d{4}.*$/, '').replace(/^(h\.|entre)\s*/, '');
+      if (resto) col.appendChild($('span', '', resto));
       var y = anio(s.fecha);
-      if (n0 && y && y >= n0) col.appendChild($('small', '', (y - n0) + ' años'));
+      // la edad solo tiene sentido mientras la persona vivía: si ya había muerto (o tendría
+      // una edad imposible, cuando no se sabe su muerte) no se pone
+      var muerte = anioMuerte(id);
+      if (n0 && y && y >= n0) {
+        if (muerte && y > muerte) col.appendChild($('small', 'tras', 'tras su muerte'));
+        else if (!muerte && y - n0 > 95) col.appendChild($('small', 'tras', 'probablemente ya fallecido' + (p.s === 'f' ? 'a' : '')));
+        else col.appendChild($('small', '', (y - n0) + ' años'));
+      }
       li2.appendChild(col);
       var cu = $('div', 'gn-que');
       cu.appendChild($('b', '', s.t));

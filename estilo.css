@@ -683,3 +683,14 @@ h2::after { content: ""; display: block; width: min(320px, 70%); height: 26px; m
 @media (max-width: 860px) {
   .banda::after { width: 70%; opacity: .55; }
 }
+
+/* fondo del árbol: un bergantín entrando en La Habana (litografía de 1855) */
+.gn-lienzo {
+  background:
+    linear-gradient(to bottom, rgba(250, 244, 229, .50) 0%, rgba(250, 244, 229, .38) 45%, rgba(250, 244, 229, .62) 80%, rgba(250, 244, 229, .78) 100%),
+    url("img/fondo-bergantin.jpg") left bottom / max(100%, 1100px) auto no-repeat,
+    #efe3c4;
+}
+.gn-arbol::after { content: "Fondo: un bergantín entra en el puerto de La Habana (litografía de 1855, «Álbum pintoresco de la Isla de Cuba»)";
+  position: absolute; left: 12px; bottom: 6px; z-index: 2; max-width: 60%; font-size: .74rem; font-style: italic; color: var(--tinta-suave); pointer-events: none; text-shadow: 0 0 4px #f6eedb; }
+@media (max-width: 759px) { .gn-arbol::after { display: none; } }
