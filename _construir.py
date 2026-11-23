@@ -120,7 +120,7 @@ persona("agustin-naranjo-rodriguez", nombre="Agustín Benito Naranjo Rodríguez"
     pendiente=["Su defunción en el Registro Civil de Pinar del Río.", "Su matrimonio civil con Quirina, si lo hubo.", "Archivo Nacional de Cuba: Registro General de Españoles de 1899-1900."],
     familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "quirina-fernandez-fernandez", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "inocencia-naranjo-fernandez", "adrian-naranjo-rodriguez", "natalio-naranjo-rodriguez"])
 
-persona("quirina-fernandez-fernandez", nombre="Quirina Úrsula Fernández Fernández", fechas="n. San Luis (Pinar del Río)", foto="img/fotos/quirina-fernandez.jpg",
+persona("quirina-fernandez-fernandez", nombre="Quirina Úrsula Fernández Fernández", fechas="n. San Luis (Pinar del Río)", foto="img/fotos/quirina-fernandez-fernandez.jpg",
     resumen="Cubana de San Luis, en la provincia de Pinar del Río, hija de un canario. Compañera de Agustín Naranjo y madre de sus hijos.",
     datos=[("Nacimiento", "San Luis, Pinar del Río (Cuba)"), ("Padres", "Antonio Fernández (canario) e Inocencia Fernández"), ("Pareja", "Agustín Benito Naranjo Rodríguez"), ("Hijos", "Juana, José, Inocencia «Nina» y Felicita Naranjo Fernández")],
     enlaces=[perfil("GLX3-6WW")],
