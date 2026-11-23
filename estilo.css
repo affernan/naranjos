@@ -646,3 +646,40 @@ body.inicio main { padding-top: 0; }
   .gn-lienzo { height: calc(100vh - 150px); height: calc(100dvh - 150px); min-height: 360px; }
   .gn-lateral { z-index: 120; }
 }
+
+/* ===== Grabado del puerto de La Habana (siglo XIX) como textura ===== */
+/* banda: el perfil de la ciudad, a la derecha, desvanecido hacia la izquierda */
+.banda::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: min(62%, 820px); pointer-events: none;
+  background: url("img/banda-habana.jpg") right 58% / cover no-repeat; opacity: .75;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.55) 35%, #000 75%);
+          mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.55) 35%, #000 75%); }
+.banda-int { position: relative; z-index: 1; }
+.banda-nav a { text-shadow: 0 0 4px var(--papel), 0 0 8px var(--papel); }
+
+/* lienzo del árbol: el puerto abajo, que se funde con el papel hacia los antepasados */
+.gn-lienzo {
+  background:
+    linear-gradient(to bottom, rgba(250, 244, 229, .97) 0%, rgba(250, 244, 229, .86) 38%, rgba(250, 244, 229, .45) 75%, rgba(250, 244, 229, .25) 100%),
+    url("img/fondo-habana.jpg") center 70% / cover no-repeat,
+    #f6eedb;
+}
+.gn-lienzo::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 60px rgba(110, 80, 40, .22); }
+.gn-caja { box-shadow: 1px 2px 5px rgba(70, 45, 15, .22), 0 0 0 3px rgba(250, 244, 229, .55); }
+.gn-lineas path { stroke: #8f7c60; }
+.gn-controles { z-index: 3; }
+
+/* pie de página: el grabado entero, muy apagado */
+footer { position: relative; overflow: hidden; background:
+    linear-gradient(to bottom, var(--papel) 0%, rgba(241, 228, 195, .82) 30%, rgba(241, 228, 195, .7) 100%),
+    url("img/fondo-habana.jpg") center 55% / cover no-repeat; }
+footer .grabado { display: block; margin-top: .5rem; font-size: .8rem; opacity: .85; }
+
+/* separadores de sección con la línea del horizonte */
+h2::after { content: ""; display: block; width: min(320px, 70%); height: 26px; margin: .35rem auto 0;
+  background: url("img/banda-habana.jpg") center 60% / cover no-repeat; opacity: .8;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+          mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
+.gn h2::after, .ficha-breve h2::after { display: none; }
+@media (max-width: 860px) {
+  .banda::after { width: 70%; opacity: .55; }
+}

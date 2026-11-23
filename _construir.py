@@ -280,7 +280,7 @@ def pagina(nombre_archivo, titulo, descripcion, contenido, base="", actual=None,
 <footer><div class="envoltura">
   {BARCO.replace('class="barco"', 'class="barco pie"')}
   <p>Investigación familiar en curso. Solo se publican personas fallecidas.<br>
-  Fuentes: archivo parroquial y Registro Civil de Telde, memorias familiares, FamilySearch, Jable (ULPGC), UF Digital Collections, Hemeroteca Digital BNE y el libro <i>Los Naranjos</i> (escudo).</p>
+  Fuentes: archivo parroquial y Registro Civil de Telde, memorias familiares, FamilySearch, Jable (ULPGC), UF Digital Collections, Hemeroteca Digital BNE y el libro <i>Los Naranjos</i> (escudo).<span class="grabado">Fondo: el puerto de La Habana, grabado del siglo XIX.</span></p>
 </div></footer>
 </body>
 </html>
