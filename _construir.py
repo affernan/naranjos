@@ -302,7 +302,7 @@ def pagina(nombre_archivo, titulo, descripcion, contenido, base="", actual=None,
 </main>
 <footer class="pie"><div class="pie-int">
   <div class="pie-marca"><img src="{base}img/escudo-naranjo.png" alt=""><div><b>Los <span>Naranjo</span> de Telde</b><small>De Gran Canaria a Venezuela y Cuba</small></div></div>
-  <nav class="pie-nav" aria-label="Secciones">{"".join(f'<a href="{base}{h}">{n}</a>' for h, n in MENU)}</nav>
+  <nav class="pie-nav" aria-label="Secciones">{"".join(f'<a href="{base}{h}">{n}</a>' for h, n in MENU + [("novedades.html", "Novedades")])}</nav>
   <p class="pie-nota">Investigación familiar en curso. Solo se publican personas fallecidas.<br>Fuentes: archivo parroquial y Registro Civil de Telde, memorias familiares, FamilySearch, Geneanet, Jable (ULPGC), UF Digital Collections, Hemeroteca Digital BNE y el libro <i>Los Naranjos</i> (escudo).</p>
 </div><p class="pie-creditos">Fondos: el puerto de La Habana, grabado del siglo XIX, y «Morro y entrada del puerto de La Habana», litografía de 1855 (Wikimedia Commons).</p></footer>
 </body>
@@ -384,7 +384,7 @@ def cuerpo_ficha(slug):
 def portada():
     import sys
     sys.path.insert(0, str(RAIZ))
-    import _datos_arbol
+    import _datos_arbol, _novedades
     personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js", cuerpo_ficha)
     GENS.update({i: x.get("gn") for i, x in personas.items()})
     n_docs = sum(len(P[x]["docs"]) for x in P)
@@ -419,6 +419,11 @@ def portada():
 <script src="{ver('arbol.js')}"></script>
 <p class="nota-arbol">{len([x for x in personas.values() if not x.get("priv")])} personas. Las generaciones antiguas y las ramas de Telde y Las Palmas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. La rama de Pinar del Río, la de Venezuela y los padres de Quirina son de nuestra investigación. Solo se publican datos de personas fallecidas.</p>
 
+<section class="seccion">
+  <header class="seccion-cab"><span class="antetitulo">Lo último</span><h2>Novedades</h2><p>Lo más reciente que se ha incluido en la web, de lo más nuevo a lo más antiguo. <a href="novedades.html">Ver todas</a>.</p></header>
+  {_novedades.lista(5)}
+  <p class="ver-todas"><a href="novedades.html">Ver todas las novedades ›</a></p>
+</section>
 <section class="seccion">
   <header class="seccion-cab"><span class="antetitulo">Explorar</span><h2>La familia, de otro modo</h2></header>
   <div class="accesos">
@@ -477,6 +482,13 @@ def ficha(slug):
     if docs:
         partes.append(f'<section class="seccion documentos"><header class="seccion-cab"><span class="antetitulo">Archivo</span><h2>Documentos y hallazgos</h2><p class="instrucciones">Pulse en una imagen para verla a tamaño completo.</p></header>{docs}</section>')
     pagina(f"personas/{slug}.html", f'{p["nombre"]} · Los Naranjo de Telde', p["resumen"], "\n".join(partes), base=base, actual="personas.html")
+
+def novedades():
+    import sys
+    sys.path.insert(0, str(RAIZ))
+    import _novedades
+    pagina("novedades.html", "Novedades · Los Naranjo de Telde", "Lo último que se ha incluido en la web de los Naranjo de Telde.",
+           f'<header class="cabecera-pagina"><h1>Novedades</h1><p class="entradilla">Todo lo que se ha ido incluyendo en la web, de lo más reciente a lo más antiguo. Pulse en una novedad para ir a su página.</p></header><section class="seccion">{_novedades.lista()}</section>')
 
 def indice_personas():
     def tarjeta(x):
@@ -580,7 +592,7 @@ if __name__ == "__main__":
     sys.path.insert(0, str(RAIZ))
     import _docs_venezuela
     _docs_venezuela.registrar(DOC, P)
-    portada(); indice_personas(); viajes(); cronologia(); fuentes()
+    portada(); novedades(); indice_personas(); viajes(); cronologia(); fuentes()
     for s in P: ficha(s)
     # limpiar páginas antiguas
     for viejo in ["historia.html", "cuba.html", "venezuela.html", "tenerife.html"]:
