@@ -158,9 +158,11 @@ persona("inocencia-naranjo-fernandez", nombre="Inocencia María «Nina» Naranjo
     familia=["agustin-naranjo-rodriguez", "quirina-fernandez-fernandez", "hugo-fernandez-arada", "juana-naranjo-fernandez", "jose-naranjo-fernandez", "felicita-naranjo-fernandez"])
 
 persona("hugo-fernandez-arada", nombre="Hugo Ángel Fernández Arada", fechas="Pinar del Río, 1913 – h. 1984-1989",
+    foto="img/fotos/hugo-fernandez-arada.jpg", pie_foto="Retrato publicado en MyHeritage (Family Trees).",
     resumen="Esposo de Inocencia «Nina» Naranjo Fernández. Tuvieron cinco hijos, nacidos entre 1942 y 1955.",
     datos=[("Nacimiento", "2 oct 1913, Pinar del Río (Cuba)"), ("Esposa", "Inocencia María Naranjo Fernández"), ("Hijos", "Cinco, nacidos entre 1942 y 1955 (personas vivas: no se publican sus datos)"), ("Defunción", "Entre 1984 y 1989")],
-    pendiente=["Documentar su matrimonio con Inocencia y su defunción."],
+    enlaces=["MyHeritage (Family Trees): «Hugo Angel de la Caridad Fernández Arada, 1910 - 1984», con su retrato."],
+    pendiente=["Documentar su matrimonio con Inocencia y su defunción.", "MyHeritage le da 1910 como año de nacimiento, muerte en 1984 a los 73 años y un solo hijo; nuestros datos dicen 1913 y cinco hijos. Hay que comprobarlo."],
     familia=["inocencia-naranjo-fernandez"])
 
 persona("felix-naranjo-fernandez", nombre="Félix Naranjo Fernández", fechas="n. h. 1904-1905 · Cuba y Santa Cruz de Tenerife",
