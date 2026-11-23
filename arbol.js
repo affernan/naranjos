@@ -22,6 +22,11 @@
   function lista(id, c) { return (P[id] && P[id][c]) || []; }
   function ev(id) { return (P[id] && P[id].e) || {}; }
   function esMovil() { return window.innerWidth < 760; }
+  function romano(n) {
+    var r = '', t = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+    t.forEach(function (x) { while (n >= x[0]) { r += x[1]; n -= x[0]; } });
+    return r;
+  }
   function anio(t) { var m = /(\d{4})/.exec(t || ''); return m ? +m[1] : null; }
   function padresOrden(id) {
     var pa = null, ma = null;
@@ -149,12 +154,32 @@
     var orden = Object.keys(filas).map(Number).sort(function (a, b) { return a - b; });
     var topFila = {}, y = 24;
     orden.forEach(function (f) { topFila[f] = y; y += filas[f] + ENTRE; });
-    var margen = 30, dx = margen - minX;
+    // a la izquierda queda una columna para las etiquetas de generación
+    var margen = 30, izq = P[foco].gn ? 150 : margen, dx = izq - minX;
     cajas.forEach(function (c) {
       c.cx = c.x + dx; c.left = c.cx - c.w / 2; c.top = topFila[c.fila];
       c.el.style.left = c.left + 'px'; c.el.style.top = c.top + 'px';
     });
-    tamMundo = { w: maxX - minX + 2 * margen, h: y - ENTRE + 24 };
+    tamMundo = { w: maxX - minX + izq + margen, h: y - ENTRE + 24 };
+    // las etiquetas van en una capa fija sobre el lienzo: siguen a su fila en vertical,
+    // pero se quedan siempre pegadas al borde izquierdo aunque el árbol se desplace
+    etiquetas = [];
+    capaGen = $('div', 'gn-capa-gen');
+    lienzo.appendChild(capaGen);
+    if (P[foco].gn) {
+      var PARENTESCO = { '-4': 'Tatarabuelos', '-3': 'Bisabuelos', '-2': 'Abuelos', '-1': 'Padres', '0': 'Hermanos y pareja', '1': 'Hijos' };
+      orden.forEach(function (f) {
+        if (f === 2) return;                       // segunda fila de hijos: misma generación
+        var g = P[foco].gn + f;
+        if (g < 1) return;
+        var et = $('div', 'gn-gen');
+        et.appendChild($('b', '', 'Generación ' + romano(g)));
+        if (estado.sel && PARENTESCO[f]) et.appendChild($('small', '', PARENTESCO[f]));
+        var alto = f === 1 && filas[2] ? filas[1] + ENTRE + filas[2] : filas[f];
+        capaGen.appendChild(et);
+        etiquetas.push({ el: et, y: topFila[f] + alto / 2 });
+      });
+    }
     mundo.style.width = tamMundo.w + 'px'; mundo.style.height = tamMundo.h + 'px';
     svg.setAttribute('width', tamMundo.w); svg.setAttribute('height', tamMundo.h);
 
@@ -236,7 +261,11 @@
   }
 
   /* ---------------- árbol: mover y ampliar ---------------- */
-  function aplicar() { if (mundo) mundo.style.transform = 'translate(' + estado.tx + 'px,' + estado.ty + 'px) scale(' + estado.s + ')'; }
+  var etiquetas = [], capaGen = null;
+  function aplicar() {
+    if (mundo) mundo.style.transform = 'translate(' + estado.tx + 'px,' + estado.ty + 'px) scale(' + estado.s + ')';
+    etiquetas.forEach(function (l) { l.el.style.top = (estado.ty + l.y * estado.s) + 'px'; });
+  }
   function anchoVisible() {
     var w = lienzo.clientWidth;
     if (estado.lateral && !esMovil()) w -= lateral.offsetWidth;
@@ -357,6 +386,7 @@
     var tt = $('div', 'gn-lat-tit');
     tt.appendChild($('h2', '', p.n));
     if (e.o && estado.lado !== 'familia') tt.appendChild($('p', 'gn-oficio', e.o));
+    if (p.gn) tt.appendChild($('p', 'gn-generacion', 'Generación ' + romano(p.gn)));
     cab.appendChild(tt);
     var x = $('button', 'gn-cerrar', '×'); x.type = 'button'; x.title = 'Cerrar'; x.setAttribute('data-cerrar', '1');
     cab.appendChild(x);
@@ -460,6 +490,7 @@
     if (e.nota) ul.appendChild($('li', '', e.nota));
     if (!e.n && !e.d && p.f) ul.appendChild($('li', '', p.f));
     if (e.o) ul.appendChild($('li', '', e.o));
+    if (p.gn) ul.appendChild($('li', '', 'Generación ' + romano(p.gn) + ' (contando desde Diego Pérez Naranjo, h. 1470)'));
     tt.appendChild(ul);
     cab.appendChild(tt);
     fichaEl.appendChild(cab);

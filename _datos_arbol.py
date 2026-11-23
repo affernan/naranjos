@@ -478,6 +478,21 @@ def generar(P_fichas=None, destino=None, cuerpo_ficha=None):
                 if i in d[campo]: d[campo].remove(i)
         del personas[i]
 
+    # generaciones, contadas desde el Naranjo más antiguo conocido (Diego Pérez Naranjo, h. 1470 = I):
+    # hijos +1, padres -1, cónyuges la misma; la primera asignación es la que vale
+    from collections import deque
+    gen = {"diego-perez-naranjo": 1}
+    cola = deque(["diego-perez-naranjo"])
+    while cola:
+        i = cola.popleft()
+        for campo, salto in (("h", 1), ("p", -1), ("c", 0)):
+            for x in personas[i][campo]:
+                if x in personas and x not in gen:
+                    gen[x] = gen[i] + salto
+                    cola.append(x)
+    for i, g in gen.items():
+        personas[i]["gn"] = g
+
     # rama de Pinar del Río: antepasados y descendientes de Agustín (y sus parejas)
     verde = set()
     def subir(i):
