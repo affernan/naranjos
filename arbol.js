@@ -122,8 +122,13 @@
     // hijos, centrados bajo la pareja
     var hijos = lista(foco, 'h');
     var cxPareja = conyuges.length ? (ANCHO + HUECO) / 2 : 0;
-    var totalH = hijos.length * ANCHO + (hijos.length - 1) * HUECO;
-    hijos.forEach(function (h, i) { poner(h, cxPareja - totalH / 2 + ANCHO / 2 + i * (ANCHO + HUECO), 1, ANCHO, 'hijo'); });
+    // si son muchos (más de 8), en dos filas, una encima de la otra
+    var porFila = hijos.length > 8 ? Math.ceil(hijos.length / 2) : hijos.length;
+    hijos.forEach(function (h, i) {
+      var r = i < porFila ? 1 : 2, j = r === 1 ? i : i - porFila, n = r === 1 ? porFila : hijos.length - porFila;
+      var total = n * ANCHO + (n - 1) * HUECO;
+      poner(h, cxPareja - total / 2 + ANCHO / 2 + j * (ANCHO + HUECO), r, ANCHO, 'hijo');
+    });
 
     // dibujar las cajas para medir su alto
     mundo = $('div', 'gn-mundo');
@@ -198,16 +203,33 @@
       trazo('M' + (cf.left + cf.w) + ' ' + y + 'H' + cc.left, P[foco].v && P[cid].v);
     });
     // hijos
-    var hc = cajas.filter(function (c) { return c.fila === 1; });
-    if (hc.length) {
+    var hc1 = cajas.filter(function (c) { return c.fila === 1; }).sort(function (a, b) { return a.cx - b.cx; });
+    var hc2 = cajas.filter(function (c) { return c.fila === 2; }).sort(function (a, b) { return a.cx - b.cx; });
+    if (hc1.length) {
       var c1 = conyuges.length ? porId[conyuges[0] + '|0'] : null;
-      var ancla = c1 ? { cx: (cf.left + cf.w + c1.left) / 2, top: 0, h: 0, id: foco } : cf;
-      if (c1) {
-        var yU = cf.top + Math.min(cf.h, c1.h) / 2, baseF = Math.max(cf.top + cf.h, c1.top + c1.h);
-        var verdeH = hc.some(function (h) { return P[h.id].v; }) && P[foco].v;
-        trazo('M' + ancla.cx + ' ' + yU + 'V' + (baseF + 10), verdeH);
-        horquilla([{ cx: ancla.cx, top: baseF + 10, h: 0, id: foco }], hc);
-      } else horquilla([cf], hc);
+      var ax = c1 ? (cf.left + cf.w + c1.left) / 2 : cf.cx;
+      var ay = c1 ? cf.top + Math.min(cf.h, c1.h) / 2 : cf.top + cf.h;
+      var bus1 = Math.min.apply(null, hc1.map(function (h) { return h.top; })) - 16;
+      trazo('M' + ax + ' ' + ay + 'V' + bus1, false);
+      trazo('M' + Math.min.apply(null, hc1.map(function (h) { return h.cx; }).concat([ax])) + ' ' + bus1 + 'H' + Math.max.apply(null, hc1.map(function (h) { return h.cx; }).concat([ax])), false);
+      hc1.forEach(function (h) { trazo('M' + h.cx + ' ' + bus1 + 'V' + h.top, false); });
+      var gx = null, bus2 = null;
+      if (hc2.length) {
+        // la segunda fila se alcanza bajando por el hueco de la primera más cercano al centro
+        var huecos = [];
+        for (var i = 0; i + 1 < hc1.length; i++) huecos.push((hc1[i].left + hc1[i].w + hc1[i + 1].left) / 2);
+        if (!huecos.length) huecos.push(hc1[0].left + hc1[0].w + 10);
+        gx = huecos.reduce(function (m, x) { return Math.abs(x - ax) < Math.abs(m - ax) ? x : m; }, huecos[0]);
+        bus2 = Math.min.apply(null, hc2.map(function (h) { return h.top; })) - 16;
+        trazo('M' + gx + ' ' + bus1 + 'V' + bus2, false);
+        trazo('M' + Math.min.apply(null, hc2.map(function (h) { return h.cx; }).concat([gx])) + ' ' + bus2 + 'H' + Math.max.apply(null, hc2.map(function (h) { return h.cx; }).concat([gx])), false);
+        hc2.forEach(function (h) { trazo('M' + h.cx + ' ' + bus2 + 'V' + h.top, false); });
+      }
+      // la línea verde hasta el hijo de la rama de Pinar del Río
+      if (P[foco].v) {
+        hc1.filter(function (h) { return P[h.id].v; }).forEach(function (h) { trazo('M' + ax + ' ' + ay + 'V' + bus1 + 'H' + h.cx + 'V' + h.top, true); });
+        hc2.filter(function (h) { return P[h.id].v; }).forEach(function (h) { trazo('M' + ax + ' ' + ay + 'V' + bus1 + 'H' + gx + 'V' + bus2 + 'H' + h.cx + 'V' + h.top, true); });
+      }
     }
     focoXY = { x: cf.cx, y: cf.top + cf.h / 2 };
     mundo.classList.add('entra');
