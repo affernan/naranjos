@@ -24,6 +24,16 @@ JABLE = "https://jable.ulpgc.es/jable/"
 # DOCUMENTOS CON IMAGEN  (img = recorte o página; grande = imagen completa opcional)
 # ----------------------------------------------------------------------------------
 DOC = {
+    "matrimonio_falcon": dict(
+        titulo="Ana Antonia Naranjo Cabrera y su marido, Juan Falcón de Llarena",
+        imgs=["img/fotos/matrimonio-falcon-naranjo.jpg"],
+        texto="Retrato del matrimonio Falcón Naranjo, de estudio, hacia 1880.",
+        fuente='Foto depositada por Luisa Virginia Henríquez Guerra (luisitahg) en Geneanet: <a href="https://www.geneanet.org/media/public/matrimonio-falcon-naranjo-59268512" target="_blank" rel="noopener">«Matrimonio Falcon Naranjo»</a>.'),
+    "firma_manuel": dict(
+        titulo="Firma de Manuel Naranjo",
+        imgs=["img/docs/firma-manuel-naranjo.jpg"],
+        texto="«Manuel Naranjo», firma autógrafa recortada de un documento de Aragua (Venezuela).",
+        fuente='Imagen depositada por Luisa Virginia Henríquez Guerra (luisitahg) en <a href="https://gw.geneanet.org/luisitahg?lang=es&n=naranjo+y+cabrera&p=manuel" target="_blank" rel="noopener">su árbol de Geneanet</a>.'),
     "trinidad1878": dict(
         titulo="Llegada del Trinidad a La Habana (Diario de la Marina, 27 dic 1878)",
         imgs=["img/prensa/1878-diario-marina-trinidad.jpg"],
@@ -66,11 +76,12 @@ persona("adrian-naranjo-cubas", nombre="Adrián Naranjo y Cubas", fechas="n. 179
     datos=[("Nacimiento", "1799 (según el Árbol de FamilySearch)"), ("Padres", "Salvador González Naranjo y Ana Rosalía de Cubas Ortega y Medina (Geneanet)"), ("Abuelos", "Cayetano Naranjo Muñiz y María Margarita González de la Fuente; Adrián José Nicolás de Cubas y Medina y María de los Ángeles de Ortega y Medina"), ("Esposa", "Antonia Cabrera y Padrón (Josefa Antonia Cabrera de Quintana y Padrón)"), ("Matrimonio", "Telde, 27 sep 1818"), ("Hijos", "18 según el Árbol de FamilySearch")],
     vida=[("27 sep 1818", "Se casa en Telde con Antonia Cabrera y Padrón."), ("1857-1861", "Aparece como vecino de Telde en listas de contribuyentes del Boletín Oficial de Canarias."), ("25 jul 1859", "Renuncia a su cargo de perito agrónomo de Canarias (Boletín Oficial de Canarias).")],
     enlaces=[perfil("KCFZ-LSS")],
-    familia=["antonia-cabrera-padron", "salvador-naranjo-cabrera", "francisco-javier-naranjo-cabrera", "jose-naranjo-cabrera", "manuel-naranjo-cabrera", "juan-naranjo-cabrera", "felix-naranjo-cabrera"])
+    familia=["antonia-cabrera-padron", "salvador-naranjo-cabrera", "francisco-javier-naranjo-cabrera", "jose-naranjo-cabrera", "ana-naranjo-cabrera", "manuel-naranjo-cabrera", "juan-naranjo-cabrera", "felix-naranjo-cabrera"])
 
-persona("antonia-cabrera-padron", nombre="Antonia Cabrera y Padrón", fechas="c. Telde, 1818",
+persona("antonia-cabrera-padron", nombre="Antonia Cabrera y Padrón", fechas="n. Telde, 1800",
+    foto="img/fotos/antonia-cabrera-padron.jpg", pie_foto="Retrato depositado por Luisa Virginia Henríquez Guerra (luisitahg) en Geneanet.",
     resumen="Josefa Antonia Cabrera de Quintana y Padrón, madre de los dieciocho hermanos Naranjo Cabrera. Su familia (los Cabrera y los Padrón) tenía también una rama en Aragua, Venezuela.",
-    datos=[("Padres", "Pedro de Alcántara Cabrera de Quintana y María Isidro (Isidora) de Ortega Padrón y Chil"), ("Esposo", "Adrián Naranjo y Cubas (Telde, 1818)"), ("Hermano", "Pedro Cabrera, que vivió en La Victoria (Venezuela) y se casó allí en 1860")],
+    datos=[("Nacimiento", "Telde, 1800 (árbol de luisitahg en Geneanet)"), ("Padres", "Pedro de Alcántara Cabrera de Quintana y María Isidro (Isidora) de Ortega Padrón y Chil"), ("Esposo", "Adrián Naranjo y Cubas (Telde, 1818)"), ("Hermano", "Pedro Cabrera, que vivió en La Victoria (Venezuela) y se casó allí en 1860")],
     vida=[("27 sep 1818", "Se casa en Telde con Adrián Naranjo y Cubas."), ("16 abr 1860", f"Su hermano Pedro Cabrera se casa en La Victoria con María del Carmen Zumbado; testigo, su hijo Salvador Naranjo. {ark('3:1:33S7-9RRF-9MZ5', 'Imagen en FamilySearch')}")],
     enlaces=[perfil("K88R-8XN")],
     familia=["adrian-naranjo-cubas", "felix-naranjo-cabrera"])
@@ -150,6 +161,7 @@ persona("natalio-naranjo-rodriguez", nombre="Natalio Naranjo Rodríguez", fechas
     familia=["felix-naranjo-cabrera", "rosalia-rodriguez-valdes", "felix-naranjo-fernandez", "agustin-naranjo-rodriguez", "adrian-naranjo-rodriguez"])
 
 persona("inocencia-naranjo-fernandez", nombre="Inocencia María «Nina» Naranjo Fernández", fechas="Pinar del Río, 1915 – La Habana, 2010",
+    foto="img/fotos/inocencia-naranjo-fernandez.jpg", pie_foto="Retrato publicado en MyHeritage (Family Trees).",
     resumen="Hija de Agustín y Quirina. Su certificado de nacimiento es la prueba de que su padre era hijo de Félix y Rosalía. Sus memorias recogen la historia de la familia en Cuba.",
     datos=[("Nacimiento", "20 jun 1915, Barrio Primero de Ovas, Pinar del Río (Cuba)"), ("Padres", "Agustín Naranjo (natural de Canarias) y Quirina Fernández (natural de San Luis)"), ("Abuelos paternos", "matrimonio de origen: Félix y Rosalía"), ("Abuelos maternos", "Antonio e Inocencia"), ("Esposo", "Hugo Ángel Fernández Arada (Pinar del Río, 2 oct 1913 – entre 1984 y 1989)"), ("Defunción", "La Habana, 2010")],
     vida=[("20 jun 1915", "Nace en el Barrio Primero de Ovas, Pinar del Río."), ("4 oct 1927", "Su padre la inscribe en el Registro Civil de Pinar del Río."), ("2010", "Muere en La Habana.")],
@@ -197,11 +209,13 @@ persona("francisco-javier-naranjo-cabrera", nombre="Francisco Javier Naranjo Cab
           ("30 sep 1878", f"Su hija Josefa Antonia se casa en San Sebastián con Rafael Ortega. {ark('3:1:33SQ-GRRL-BDH', 'Imagen')}")],
     familia=["adrian-naranjo-cubas", "salvador-naranjo-cabrera", "manuel-naranjo-cabrera", "felix-naranjo-cabrera"])
 
-persona("manuel-naranjo-cabrera", nombre="Manuel Naranjo Cabrera", fechas="1839 – 1913 · La Victoria (Aragua)",
+persona("manuel-naranjo-cabrera", nombre="Manuel Naranjo Cabrera", fechas="Telde, 1839 – San Sebastián de los Reyes (Aragua), 1913",
+    foto="img/fotos/manuel-naranjo-cabrera.jpg", pie_foto="Retrato depositado por Luisa Virginia Henríquez Guerra (luisitahg) en Geneanet.",
     resumen="Uno de los hermanos Naranjo Cabrera, establecido en La Victoria (Aragua, Venezuela). Fue padrino de muchos niños del pueblo y testigo en la boda de su hermano Salvador.",
-    datos=[("Nacimiento", "1839"), ("Defunción", "1913"), ("Esposa", "Inelda (Ynelda) del Nogal"), ("Hijos", "8 según el Árbol de FamilySearch; entre ellos Luisa Elena de Lourdes (bautizada en San Sebastián el 1 nov 1895)")],
+    datos=[("Nacimiento", "Telde, 27 ago 1839"), ("Defunción", "San Sebastián de los Reyes (Aragua, Venezuela), 5 oct 1913, a los 74 años"), ("Esposa", "Inelda del Nogal Macías (1855-1935)"), ("Matrimonio", "San Sebastián de los Reyes, 9 mar 1872 (expediente de soltería del 12 feb 1872)"), ("Hijos", "8 según el Árbol de FamilySearch; entre ellos León Domingo (1892-1953) y Luisa Elena de Lourdes (bautizada en San Sebastián el 1 nov 1895)")],
+    docs=["firma_manuel"],
     vida=[("28 jun 1862", "Testigo en la boda de su hermano Salvador en La Victoria."), ("1865-1871", "Padrino en al menos ocho bautismos de La Victoria."), ("13 ene 1877", f"Padrino de Adrián María de los Dolores, hijo de Rómulo Navarro y Rosario Naranjo (¿sobrina suya?). {ark('3:1:33S7-9RRV-98HN', 'Imagen')}")],
-    enlaces=[perfil("MRKQ-LJD")],
+    enlaces=[perfil("MRKQ-LJD"), '<a href="https://gw.geneanet.org/luisitahg?lang=es&n=naranjo+y+cabrera&p=manuel" target="_blank" rel="noopener">Su ficha en el árbol de Luisa Virginia Henríquez Guerra (Geneanet)</a>, con enlaces a las imágenes de FamilySearch de su matrimonio y defunción'],
     familia=["adrian-naranjo-cubas", "salvador-naranjo-cabrera", "francisco-javier-naranjo-cabrera", "felix-naranjo-cabrera"])
 
 persona("juan-naranjo-cabrera", nombre="Juan Naranjo Cabrera", fechas="n. 1841",
@@ -211,6 +225,14 @@ persona("juan-naranjo-cabrera", nombre="Juan Naranjo Cabrera", fechas="n. 1841",
     docs=["carta1879"],
     pendiente=["Qué fue de él en Cuba. No confundirlo con el Juan Naranjo Cabrera de San Lorenzo (Las Palmas), nacido hacia 1880."],
     familia=["adrian-naranjo-cubas", "felix-naranjo-cabrera"])
+
+persona("ana-naranjo-cabrera", nombre="Ana Antonia Naranjo Cabrera", fechas="n. Telde, 8 oct 1837",
+    foto="img/fotos/ana-naranjo-cabrera.jpg", pie_foto="Retrato depositado por Luisa Virginia Henríquez Guerra (luisitahg) en Geneanet.",
+    resumen="Una de las hermanas Naranjo Cabrera. Se casó con Juan Falcón de Llarena y tuvo al menos diez hijos, los Falcón Naranjo. Se conservan su retrato y uno del matrimonio.",
+    datos=[("Nacimiento", "8 oct 1837 (Historia de los Naranjo, p. 161)"), ("Padres", "Adrián Naranjo y Cubas y Josefa Antonia Cabrera de Quintana y Padrón"), ("Esposo", "Juan Falcón de Llarena"), ("Hijos", "Pilar (1881-1912), Ana (1884-1940), Josefa Cristina (1885-1912), María del Pino (1888), Salvador (1890-1927), Carmelo (1891-1958), Consuelo (1892), Adán, Eva y Juan"), ("Nota", "El libro de Miguel Rodríguez Díaz de Quintana dice que murió soltera; el árbol de luisitahg y Geni la tienen casada, y lo confirma la foto del matrimonio.")],
+    docs=["matrimonio_falcon"],
+    enlaces=['<a href="https://gw.geneanet.org/luisitahg?lang=es&n=naranjo+y+cabrera&p=ana+antonia" target="_blank" rel="noopener">Su ficha en el árbol de Luisa Virginia Henríquez Guerra (Geneanet)</a>'],
+    familia=["adrian-naranjo-cubas", "antonia-cabrera-padron", "manuel-naranjo-cabrera", "felix-naranjo-cabrera"])
 
 persona("jose-naranjo-cabrera", nombre="José Naranjo Cabrera", fechas="1836 – 1896",
     resumen="Uno de los hermanos Naranjo Cabrera. Sus hijos nacieron entre Cuba y Las Palmas y formaron una rama habanera de la familia, que pudo acoger a Rosalía y a sus hijos.",

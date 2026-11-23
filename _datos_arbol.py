@@ -265,7 +265,18 @@ def nuestras_personas():
     propia("rafael-ortega", "Rafael Ortega", "", "m", [], ["josefa-antonia-naranjo-zumbado"], "")
     propia("francisco-javier-naranjo-zumbado", "Francisco Javier Naranjo Zumbado", "1867", "m", FZ, [], "Hijo póstumo: bautizado en San Sebastián el 5 de agosto de 1867; su padrino fue su tío Salvador.")
     M = "manuel|naranjo cabrera|2"
-    propia("inelda-del-nogal", "Inelda (Ynelda) del Nogal", "", "f", [], [M], "Esposa de Manuel Naranjo Cabrera, en La Victoria (Venezuela).")
+    propia("inelda-del-nogal", "Inelda del Nogal Macías", "1855 – 1935", "f", [], [M], "Esposa de Manuel Naranjo Cabrera, con quien se casó en San Sebastián de los Reyes (Aragua) en 1872.")
+    propia("leon-domingo-naranjo-del-nogal", "León Domingo Naranjo del Nogal", "1892 – 1953", "m", [M, "inelda-del-nogal"], [], "Hijo de Manuel Naranjo Cabrera e Inelda del Nogal (árbol de luisitahg en Geneanet).")
+    # Ana Antonia y los Falcón Naranjo (árbol de luisitahg en Geneanet)
+    A = "ana|naranjo cabrera|0"
+    propia("juan-falcon-de-llarena", "Juan Falcón de Llarena", "", "m", [], [A], "Esposo de Ana Antonia Naranjo Cabrera.")
+    AF = [A, "juan-falcon-de-llarena"]
+    for slug, nombre, fechas, sexo in [("pilar-falcon-naranjo", "Pilar Falcón Naranjo", "1881 – 1912", "f"), ("ana-falcon-naranjo", "Ana Falcón Naranjo", "1884 – 1940", "f"),
+                                       ("josefa-cristina-falcon-naranjo", "Josefa Cristina Falcón Naranjo", "1885 – 1912", "f"), ("maria-del-pino-falcon-naranjo", "María del Pino Falcón Naranjo", "1888", "f"),
+                                       ("salvador-falcon-naranjo", "Salvador Falcón Naranjo", "1890 – 1927", "m"), ("carmelo-falcon-naranjo", "Carmelo Falcón Naranjo", "1891 – 1958", "m"),
+                                       ("consuelo-falcon-naranjo", "Consuelo Falcón Naranjo", "1892", "f"), ("adan-falcon-naranjo", "Adán Falcón Naranjo", "", "m"),
+                                       ("eva-falcon-naranjo", "Eva Falcón Naranjo", "", "f"), ("juan-falcon-naranjo", "Juan Falcón Naranjo", "", "m")]:
+        propia(slug, nombre, fechas, sexo, AF, [], "Hijo de Ana Antonia Naranjo Cabrera y Juan Falcón de Llarena (árbol de luisitahg en Geneanet)." if sexo == "m" else "Hija de Ana Antonia Naranjo Cabrera y Juan Falcón de Llarena (árbol de luisitahg en Geneanet).")
     propia("luisa-elena-naranjo-del-nogal", "Luisa Elena de Lourdes Naranjo del Nogal", "1895", "f", [M, "inelda-del-nogal"], [], "Bautizada en San Sebastián (Aragua) el 1 de noviembre de 1895.")
     propia("pedro-cabrera-padron", "Pedro Cabrera", "", "m", ["pedro|de alcantara cabrera de quintana|0", "maria isidro|de ortega padron y chil|0"], ["maria-del-carmen-zumbado"],
            "Hermano de Josefa Antonia Cabrera. Vivió en La Victoria (Venezuela), donde se casó el 16 de abril de 1860.")
@@ -280,8 +291,9 @@ CORRIGE = {
     "salvador|naranjo cabrera|1": dict(f="1819", l="Murió en Venezuela", n="Salvador José Naranjo Cabrera"),
     "francisco javier|naranjo cabrera|0": dict(f="1820 – 1866"),
     "manuel|naranjo cabrera|2": dict(f="1839 – 1913"),
+    "ana|naranjo cabrera|0": dict(n="Ana Antonia Naranjo Cabrera"),
+    "josefa antonia|cabrera de quintana y padon|0": dict(n="Josefa Antonia Cabrera de Quintana y Padrón", f="1800"),
     "adrian jose nicolas|naranjo de cubas|0": dict(n="Adrián Naranjo y Cubas"),
-    "josefa antonia|cabrera de quintana y padon|0": dict(n="Josefa Antonia Cabrera de Quintana y Padrón"),
 }
 
 
@@ -360,7 +372,9 @@ HECHOS = {
     "hugo-fernandez-arada": dict(n=["2 oct 1913", "Pinar del Río (Cuba)"], d=["entre 1984 y 1989", ""]),
     "salvador-naranjo-cabrera": dict(d=["", "Venezuela"], m=[["josefa-cabrera-padron", "28 jun 1862", "La Victoria, Aragua (Venezuela)"]]),
     "francisco-javier-naranjo-cabrera": dict(d=["21 oct 1866", "San Sebastián, Aragua (Venezuela)"], m=[["maria-de-jesus-zumbado", "1857", "Aragua (Venezuela)"]]),
-    "manuel-naranjo-cabrera": dict(d=["1913", ""]),
+    "manuel-naranjo-cabrera": dict(n=["27 ago 1839", "Telde, Gran Canaria"], d=["5 oct 1913", "San Sebastián de los Reyes, Aragua (Venezuela)"], m=[["inelda-del-nogal", "9 mar 1872", "San Sebastián de los Reyes, Aragua (Venezuela)"]]),
+    "antonia-cabrera-padron": dict(n=["1800", "Telde, Gran Canaria"]),
+    "ana-naranjo-cabrera": dict(m=[["juan-falcon-de-llarena", "", ""]]),
     "adrian-eulogio-naranjo-cabrera": dict(n=["10 mar 1866", "La Victoria, Aragua (Venezuela)"], d=["1942", "Caracas (Venezuela)"]),
     "narciso-naranjo-cabrera": dict(n=["h. 1867", ""], d=["16 jun 1900", "La Victoria, Aragua (Venezuela)"]),
     "jose-naranjo-cabrera-1869": dict(n=["h. 1869", ""], d=["6 oct 1881", "La Victoria, Aragua (Venezuela)"]),
