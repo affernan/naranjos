@@ -529,6 +529,10 @@ def fuentes():
     pagina("fuentes.html", "Fuentes y pendientes · Los Naranjo de Telde", "Fuentes consultadas y búsquedas pendientes.", c, actual="fuentes.html")
 
 if __name__ == "__main__":
+    import sys
+    sys.path.insert(0, str(RAIZ))
+    import _docs_venezuela
+    _docs_venezuela.registrar(DOC, P)
     portada(); indice_personas(); viajes(); cronologia(); fuentes()
     for s in P: ficha(s)
     # limpiar páginas antiguas
