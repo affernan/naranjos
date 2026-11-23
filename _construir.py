@@ -6,6 +6,29 @@ import pathlib, html
 
 RAIZ = pathlib.Path(__file__).parent
 
+GENS = {}          # generación de cada persona (la calcula _datos_arbol en portada())
+
+def romano(n):
+    t = [(10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+    out = ""
+    for v, l in t:
+        while n >= v:
+            out += l; n -= v
+    return out
+
+def seccionar(c):
+    """Cabecera de página (h1 + entradilla) y una sección-tarjeta por cada <h2>."""
+    import re
+    partes = re.split(r"(?=<h2>)", c.strip())
+    m = re.match(r'(\s*<h1>.*?</h1>\s*(?:<p class="entradilla">.*?</p>)?)(.*)$', partes[0], re.S)
+    cab, resto = (m.group(1), m.group(2)) if m else ("", partes[0])
+    out = f'<header class="cabecera-pagina">{cab}</header>' if cab else ""
+    if resto.strip():
+        out += f'<section class="seccion">{resto}</section>'
+    for x in partes[1:]:
+        out += f'<section class="seccion">{x}</section>'
+    return out
+
 def ver(nombre):
     """Marca de versión para que los navegadores no usen una copia antigua en caché."""
     import hashlib
@@ -277,11 +300,11 @@ def pagina(nombre_archivo, titulo, descripcion, contenido, base="", actual=None,
 <main class="envoltura">
 {contenido}
 </main>
-<footer><div class="envoltura">
-  {BARCO.replace('class="barco"', 'class="barco pie"')}
-  <p>Investigación familiar en curso. Solo se publican personas fallecidas.<br>
-  Fuentes: archivo parroquial y Registro Civil de Telde, memorias familiares, FamilySearch, Jable (ULPGC), UF Digital Collections, Hemeroteca Digital BNE y el libro <i>Los Naranjos</i> (escudo).<span class="grabado">Fondo: el puerto de La Habana, grabado del siglo XIX.</span></p>
-</div></footer>
+<footer class="pie"><div class="pie-int">
+  <div class="pie-marca"><img src="{base}img/escudo-naranjo.png" alt=""><div><b>Los <span>Naranjo</span> de Telde</b><small>De Gran Canaria a Venezuela y Cuba</small></div></div>
+  <nav class="pie-nav" aria-label="Secciones">{"".join(f'<a href="{base}{h}">{n}</a>' for h, n in MENU)}</nav>
+  <p class="pie-nota">Investigación familiar en curso. Solo se publican personas fallecidas.<br>Fuentes: archivo parroquial y Registro Civil de Telde, memorias familiares, FamilySearch, Geneanet, Jable (ULPGC), UF Digital Collections, Hemeroteca Digital BNE y el libro <i>Los Naranjos</i> (escudo).</p>
+</div><p class="pie-creditos">Fondos: el puerto de La Habana, grabado del siglo XIX, y «Morro y entrada del puerto de La Habana», litografía de 1855 (Wikimedia Commons).</p></footer>
 </body>
 </html>
 """
@@ -363,6 +386,8 @@ def portada():
     sys.path.insert(0, str(RAIZ))
     import _datos_arbol
     personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js", cuerpo_ficha)
+    GENS.update({i: x.get("gn") for i, x in personas.items()})
+    n_docs = sum(len(P[x]["docs"]) for x in P)
     contenido = f"""
 <div id="app" class="gn" data-inicio="adrian-naranjo-cubas">
   <div class="gn-barra">
@@ -394,9 +419,19 @@ def portada():
 <script src="{ver('arbol.js')}"></script>
 <p class="nota-arbol">{len([x for x in personas.values() if not x.get("priv")])} personas. Las generaciones antiguas y las ramas de Telde y Las Palmas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. La rama de Pinar del Río, la de Venezuela y los padres de Quirina son de nuestra investigación. Solo se publican datos de personas fallecidas.</p>
 
-<h2>Las rutas de la familia</h2>
-{MAPA}
-<p class="nota-arbol">El árbol sigue abierto: ver <a href="fuentes.html">pendientes</a> y <a href="viajes.html">viajes</a>.</p>
+<section class="seccion">
+  <header class="seccion-cab"><span class="antetitulo">Explorar</span><h2>La familia, de otro modo</h2></header>
+  <div class="accesos">
+    <a class="acceso" href="personas.html"><span class="acceso-ico">❦</span><b>Personas</b><small>{len(P)} fichas con datos, fotos y {n_docs} documentos</small></a>
+    <a class="acceso" href="viajes.html"><span class="acceso-ico">{BARCO}</span><b>Viajes y emigración</b><small>Telde, La Guaira, La Habana y Pinar del Río</small></a>
+    <a class="acceso" href="cronologia.html"><span class="acceso-ico">✥</span><b>Cronología</b><small>Los hechos de la familia, de 1668 a 2012</small></a>
+    <a class="acceso" href="fuentes.html"><span class="acceso-ico">✎</span><b>Fuentes y pendientes</b><small>Qué se ha consultado y qué falta por pedir</small></a>
+  </div>
+</section>
+<section class="seccion">
+  <header class="seccion-cab"><span class="antetitulo">Emigración</span><h2>Las rutas de la familia</h2><p>De Telde a Venezuela desde 1835, y a Cuba en el <i>Trinidad</i> en 1878. <a href="viajes.html">Ver los viajes</a>.</p></header>
+  {MAPA}
+</section>
 """
     pagina("index.html", "Los Naranjo de Telde · Árbol genealógico", "Árbol genealógico de los Naranjo de Telde (Gran Canaria), con sus ramas en Venezuela y Cuba.", contenido, actual="index.html", clase="inicio")
 
@@ -415,9 +450,10 @@ def ficha(slug):
     pie = f'<span class="pie-retrato">{p["pie_foto"]}</span>' if p.get("pie_foto") else ""
     retrato = f'<div><a class="retrato" href="{base}{p["foto"]}" target="_blank" title="Ver la foto completa"><img src="{base}{p["foto"]}" alt="Retrato de {html.escape(p["nombre"])}"></a>{pie}</div>' if p.get("foto") else ""
     partes = [f"""<p class="migas"><a href="../index.html">Árbol</a> › <a href="../personas.html">Personas</a> › {p["nombre"]} · <a href="../index.html#{slug}">ver en el árbol</a></p>
-<div class="encabezado-ficha{" con-retrato" if retrato else ""}">
+<div class="encabezado-ficha hoja{" con-retrato" if retrato else ""}">
 {retrato}
 <div>
+<span class="antetitulo">{"Generación " + romano(GENS[slug]) if GENS.get(slug) else "Ficha"}</span>
 <h1>{p["nombre"]}</h1>
 <p class="entradilla">{p["fechas"]}</p>
 {aviso}
@@ -439,12 +475,23 @@ def ficha(slug):
         partes.append(f'<h3>Pendiente</h3><ul class="lista pendiente">{pend}</ul>')
     partes.append("</aside></div>")
     if docs:
-        partes.append(f'<h2>Documentos y hallazgos</h2><p class="instrucciones">Pulse en una imagen para verla a tamaño completo.</p>{docs}')
+        partes.append(f'<section class="seccion documentos"><header class="seccion-cab"><span class="antetitulo">Archivo</span><h2>Documentos y hallazgos</h2><p class="instrucciones">Pulse en una imagen para verla a tamaño completo.</p></header>{docs}</section>')
     pagina(f"personas/{slug}.html", f'{p["nombre"]} · Los Naranjo de Telde', p["resumen"], "\n".join(partes), base=base, actual="personas.html")
 
 def indice_personas():
-    filas = "".join(f'<a class="tarjeta enlace{" clave" if P[s].get("clave") else ""}" href="personas/{s}.html"><h3>{P[s]["nombre"]}</h3><p class="fechas">{P[s]["fechas"]}</p><p>{P[s]["resumen"]}</p><p class="cuenta">{len(P[s]["docs"])} documento(s) con imagen</p></a>' for s in ORDEN_PERSONAS)
-    pagina("personas.html", "Personas · Los Naranjo de Telde", "Fichas de cada miembro de la familia Naranjo de Telde.", f'<h1>Personas</h1><p class="entradilla">Una ficha por persona, con sus datos, su vida en fechas y los documentos encontrados.</p><div class="tarjetas">{filas}</div>', actual="personas.html")
+    def tarjeta(x):
+        q = P[x]
+        foto = f'<img class="miniatura" src="{q["foto"]}" alt="" loading="lazy">' if q.get("foto") else '<span class="miniatura vacia">❦</span>'
+        nd = len(q["docs"])
+        cuenta = f'<p class="cuenta">{nd} documento{"s" if nd != 1 else ""} con imagen</p>' if nd else ""
+        return f'<a class="tarjeta enlace persona-tarjeta{" clave" if q.get("clave") else ""}" href="personas/{x}.html">{foto}<span class="cuerpo"><h3>{q["nombre"]}</h3><p class="fechas">{q["fechas"]}</p><p>{q["resumen"]}</p>{cuenta}</span></a>'
+    grupos = {}
+    for x in ORDEN_PERSONAS:
+        grupos.setdefault(GENS.get(x) or 0, []).append(x)
+    bloques = "".join(f'<section class="seccion"><header class="seccion-cab"><span class="antetitulo">{len(xs)} ficha{"s" if len(xs) != 1 else ""}</span><h2>Generación {romano(g)}</h2></header><div class="tarjetas">{"".join(tarjeta(x) for x in xs)}</div></section>'
+                      for g, xs in sorted(grupos.items()))
+    pagina("personas.html", "Personas · Los Naranjo de Telde", "Fichas de cada miembro de la familia Naranjo de Telde.",
+           f'<header class="cabecera-pagina"><h1>Personas</h1><p class="entradilla">Una ficha por persona, con sus datos, su vida en fechas, sus fotos y los documentos encontrados. Las generaciones se cuentan desde Diego Pérez Naranjo (h. 1470).</p></header>{bloques}', actual="personas.html")
 
 # ----------------------------------------------------------------------------------
 # PÁGINAS GENERALES
@@ -463,7 +510,7 @@ def viajes():
 <p>Según las memorias de Inocencia «Nina», antes de 1900 se fueron a Cuba unas dieciséis personas de la familia: Rosalía, sus hijos y sus hermanos Lucas y Juan. Se establecieron en la provincia de Pinar del Río, la tierra natal de Rosalía. No se ha encontrado todavía la lista de su barco: en los buques de emigrantes, la prensa habanera solo publicaba el número de pasajeros.</p>
 <h2>Vuelta a Canarias</h2>
 <p>En 1924, Félix, nacido en Cuba e hijo de Natalio, cruzó el Atlántico en sentido contrario para curarse en Canarias y ya no regresó. Un <a href="personas/felix-naranjo-fernandez.html">Félix Naranjo Fernández</a> vivía en Santa Cruz de Tenerife en los años treinta.</p>"""
-    pagina("viajes.html", "Viajes y emigración · Los Naranjo de Telde", "Las rutas de la familia Naranjo: Telde, Venezuela y Cuba.", c, actual="viajes.html")
+    pagina("viajes.html", "Viajes y emigración · Los Naranjo de Telde", "Las rutas de la familia Naranjo: Telde, Venezuela y Cuba.", seccionar(c), actual="viajes.html")
 
 def cronologia():
     filas = [
@@ -499,7 +546,7 @@ def cronologia():
         ("12 oct 2012", "Muere Juana Naranjo Fernández en Lisboa.", "juana-naranjo-fernandez"),
     ]
     t = "".join(f'<tr><td class="fecha">{f}</td><td>{h}</td><td><a href="personas/{s}.html">{P[s]["nombre"]}</a></td></tr>' for f, h, s in filas)
-    pagina("cronologia.html", "Cronología · Los Naranjo de Telde", "Fechas de la familia Naranjo de Telde, de 1668 a 2012.", f'<h1>Cronología</h1><p class="entradilla">Las fechas marcadas como «tradición familiar» vienen de las memorias y aún no tienen documento.</p><div class="tabla"><table><thead><tr><th>Fecha</th><th>Hecho</th><th>Ficha</th></tr></thead><tbody>{t}</tbody></table></div>', actual="cronologia.html")
+    pagina("cronologia.html", "Cronología · Los Naranjo de Telde", "Fechas de la familia Naranjo de Telde, de 1668 a 2012.", seccionar(f'<h1>Cronología</h1><p class="entradilla">Las fechas marcadas como «tradición familiar» vienen de las memorias y aún no tienen documento.</p><div class="tabla"><table><thead><tr><th>Fecha</th><th>Hecho</th><th>Ficha</th></tr></thead><tbody>{t}</tbody></table></div>'), actual="cronologia.html")
 
 def fuentes():
     c = """<h1>Fuentes y pendientes</h1>
@@ -526,7 +573,7 @@ def fuentes():
 </ul>
 <h2>Sobre las imágenes</h2>
 <p>Los recortes de prensa proceden de Jable (Universidad de Las Palmas de Gran Canaria) y de UF Digital Collections (Universidad de Florida). Las partidas de nacimiento, bautismo y matrimonio no se publican; sus datos figuran en las fichas. Los documentos de Venezuela se enlazan a FamilySearch, donde pueden verse gratuitamente con una cuenta.</p>"""
-    pagina("fuentes.html", "Fuentes y pendientes · Los Naranjo de Telde", "Fuentes consultadas y búsquedas pendientes.", c, actual="fuentes.html")
+    pagina("fuentes.html", "Fuentes y pendientes · Los Naranjo de Telde", "Fuentes consultadas y búsquedas pendientes.", seccionar(c), actual="fuentes.html")
 
 if __name__ == "__main__":
     import sys
