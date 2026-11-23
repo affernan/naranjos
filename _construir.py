@@ -241,16 +241,15 @@ def pagina(nombre_archivo, titulo, descripcion, contenido, base="", actual=None,
 <link rel="stylesheet" href="{base}{ver('estilo.css')}">
 </head>
 <body class="{clase}">
-<header class="sitio"><div class="envoltura cabecera">
-  <a class="sello" href="{base}index.html" title="Inicio"><img src="{base}img/escudo-naranjo.png" alt="Escudo de los Naranjo"></a>
-  <div class="titulos">
-    <a class="marca" href="{base}index.html">Los <span>Naranjo</span> de Telde</a>
-    <span class="lema">De Gran Canaria a Venezuela y Cuba · siglos XIX y XX</span>
-  </div>
-  <nav class="menu">
+<header class="banda" id="banda"><div class="banda-int">
+  <a class="banda-escudo" href="{base}index.html" title="Inicio"><img src="{base}img/escudo-naranjo.png" alt="Escudo de los Naranjo"></a>
+  <a class="banda-marca" href="{base}index.html">Los <span>Naranjo</span> de Telde<small>De Gran Canaria a Venezuela y Cuba</small></a>
+  <button class="banda-menu" type="button" aria-expanded="false" aria-controls="menu-sitio" aria-label="Menú">☰</button>
+  <nav class="banda-nav" id="menu-sitio">
 {menu}
   </nav>
 </div></header>
+<script>(function(){{var b=document.getElementById('banda'),m=b.querySelector('.banda-menu');m.addEventListener('click',function(){{var a=b.classList.toggle('abierta');m.setAttribute('aria-expanded',a?'true':'false');}});}})();</script>
 <main class="envoltura">
 {contenido}
 </main>
@@ -341,25 +340,16 @@ def portada():
     import _datos_arbol
     personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js", cuerpo_ficha)
     contenido = f"""
-<section class="portada compacta">
-  <img class="escudo-mini" src="img/escudo-naranjo.png" alt="Escudo de armas de los Naranjo">
-  <div class="presentacion">
-    <h1>Árbol genealógico de los Naranjo</h1>
-    <p class="entradilla">Una familia de Telde (Gran Canaria) con antepasados conocidos desde finales del siglo XV, y ramas en Venezuela y Cuba.</p>
-    <div class="leyenda"><span><i class="muestra naranjo"></i>Apellido Naranjo</span><span><i class="muestra"></i>Otros apellidos</span><span><i class="muestra linea-verde"></i>Línea que llega a Pinar del Río</span></div>
-  </div>
-</section>
-
 <div id="app" class="gn" data-inicio="adrian-naranjo-cubas">
-  <div class="gn-cabecera">
+  <div class="gn-barra">
+    <nav class="gn-pestanas" role="tablist">
+      <button type="button" role="tab" data-tab="arbol" aria-selected="true">Árbol</button>
+      <button type="button" role="tab" data-tab="ficha" aria-selected="false">Ficha</button>
+      <button type="button" role="tab" data-tab="cronologia" aria-selected="false">Cronología</button>
+    </nav>
     <span class="gn-etiqueta" id="gn-nombre">&nbsp;</span>
     <form class="gn-buscar" role="search" autocomplete="off"><input id="buscar-persona" type="search" list="lista-personas" placeholder="Buscar: nombre o apellido" aria-label="Buscar a una persona"><datalist id="lista-personas"></datalist><button type="submit" aria-label="Buscar">⌕</button></form>
   </div>
-  <nav class="gn-pestanas" role="tablist">
-    <button type="button" role="tab" data-tab="arbol" aria-selected="true">Árbol</button>
-    <button type="button" role="tab" data-tab="ficha" aria-selected="false">Ficha</button>
-    <button type="button" role="tab" data-tab="cronologia" aria-selected="false">Cronología</button>
-  </nav>
   <div class="gn-panel" data-panel="arbol">
     <div class="gn-arbol">
       <div class="gn-lienzo" id="lienzo" tabindex="0" aria-label="Árbol genealógico: arrastre para moverse y pulse una persona para centrarla"></div>

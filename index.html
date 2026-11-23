@@ -6,16 +6,14 @@
 <title>Los Naranjo de Telde · Árbol genealógico</title>
 <meta name="description" content="Árbol genealógico de los Naranjo de Telde (Gran Canaria), con sus ramas en Venezuela y Cuba.">
 <link rel="icon" href="img/escudo-naranjo.png">
-<link rel="stylesheet" href="estilo.css?v=090e20c4">
+<link rel="stylesheet" href="estilo.css?v=bc36899b">
 </head>
 <body class="inicio">
-<header class="sitio"><div class="envoltura cabecera">
-  <a class="sello" href="index.html" title="Inicio"><img src="img/escudo-naranjo.png" alt="Escudo de los Naranjo"></a>
-  <div class="titulos">
-    <a class="marca" href="index.html">Los <span>Naranjo</span> de Telde</a>
-    <span class="lema">De Gran Canaria a Venezuela y Cuba · siglos XIX y XX</span>
-  </div>
-  <nav class="menu">
+<header class="banda" id="banda"><div class="banda-int">
+  <a class="banda-escudo" href="index.html" title="Inicio"><img src="img/escudo-naranjo.png" alt="Escudo de los Naranjo"></a>
+  <a class="banda-marca" href="index.html">Los <span>Naranjo</span> de Telde<small>De Gran Canaria a Venezuela y Cuba</small></a>
+  <button class="banda-menu" type="button" aria-expanded="false" aria-controls="menu-sitio" aria-label="Menú">☰</button>
+  <nav class="banda-nav" id="menu-sitio">
     <a href="index.html" aria-current="page">Árbol</a>
     <a href="personas.html">Personas</a>
     <a href="viajes.html">Viajes</a>
@@ -23,27 +21,19 @@
     <a href="fuentes.html">Fuentes y pendientes</a>
   </nav>
 </div></header>
+<script>(function(){var b=document.getElementById('banda'),m=b.querySelector('.banda-menu');m.addEventListener('click',function(){var a=b.classList.toggle('abierta');m.setAttribute('aria-expanded',a?'true':'false');});})();</script>
 <main class="envoltura">
 
-<section class="portada compacta">
-  <img class="escudo-mini" src="img/escudo-naranjo.png" alt="Escudo de armas de los Naranjo">
-  <div class="presentacion">
-    <h1>Árbol genealógico de los Naranjo</h1>
-    <p class="entradilla">Una familia de Telde (Gran Canaria) con antepasados conocidos desde finales del siglo XV, y ramas en Venezuela y Cuba.</p>
-    <div class="leyenda"><span><i class="muestra naranjo"></i>Apellido Naranjo</span><span><i class="muestra"></i>Otros apellidos</span><span><i class="muestra linea-verde"></i>Línea que llega a Pinar del Río</span></div>
-  </div>
-</section>
-
 <div id="app" class="gn" data-inicio="adrian-naranjo-cubas">
-  <div class="gn-cabecera">
+  <div class="gn-barra">
+    <nav class="gn-pestanas" role="tablist">
+      <button type="button" role="tab" data-tab="arbol" aria-selected="true">Árbol</button>
+      <button type="button" role="tab" data-tab="ficha" aria-selected="false">Ficha</button>
+      <button type="button" role="tab" data-tab="cronologia" aria-selected="false">Cronología</button>
+    </nav>
     <span class="gn-etiqueta" id="gn-nombre">&nbsp;</span>
     <form class="gn-buscar" role="search" autocomplete="off"><input id="buscar-persona" type="search" list="lista-personas" placeholder="Buscar: nombre o apellido" aria-label="Buscar a una persona"><datalist id="lista-personas"></datalist><button type="submit" aria-label="Buscar">⌕</button></form>
   </div>
-  <nav class="gn-pestanas" role="tablist">
-    <button type="button" role="tab" data-tab="arbol" aria-selected="true">Árbol</button>
-    <button type="button" role="tab" data-tab="ficha" aria-selected="false">Ficha</button>
-    <button type="button" role="tab" data-tab="cronologia" aria-selected="false">Cronología</button>
-  </nav>
   <div class="gn-panel" data-panel="arbol">
     <div class="gn-arbol">
       <div class="gn-lienzo" id="lienzo" tabindex="0" aria-label="Árbol genealógico: arrastre para moverse y pulse una persona para centrarla"></div>
@@ -61,7 +51,7 @@
   <noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript>
 </div>
 <script src="arbol-datos.js?v=2e151926"></script>
-<script src="arbol.js?v=dd5c0224"></script>
+<script src="arbol.js?v=45e7d620"></script>
 <p class="nota-arbol">257 personas. Las generaciones antiguas y las ramas de Telde y Las Palmas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. La rama de Pinar del Río, la de Venezuela y los padres de Quirina son de nuestra investigación. Solo se publican datos de personas fallecidas.</p>
 
 <h2>Las rutas de la familia</h2>

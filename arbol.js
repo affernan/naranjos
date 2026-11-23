@@ -13,7 +13,8 @@
   var fichaEl = document.getElementById('ficha'), cronoEl = document.getElementById('cronologia');
   var etiqueta = document.getElementById('gn-nombre');
 
-  var estado = { foco: null, tab: 'arbol', lado: 'individuo', s: 1, tx: 0, ty: 0, lateral: true };
+  // foco: persona alrededor de la que se dibuja el árbol; sel: persona seleccionada (al abrir, ninguna)
+  var estado = { foco: null, sel: null, tab: 'arbol', lado: 'individuo', s: 1, tx: 0, ty: 0, lateral: false };
   var mundo = null, focoXY = null, tamMundo = { w: 0, h: 0 };
 
   /* ---------------- utilidades ---------------- */
@@ -114,7 +115,7 @@
     var conyuges = lista(foco, 'c');
     fila = fila.slice(0, k + 1).concat(conyuges.filter(function (c) { return fila.indexOf(c) < 0; }), fila.slice(k + 1));
     fila.forEach(function (id, i) {
-      var cls = id === foco ? 'foco' : (conyuges.indexOf(id) >= 0 ? 'conyuge' : 'hermano');
+      var cls = id === foco ? (estado.sel === foco ? 'foco' : 'ancla') : (conyuges.indexOf(id) >= 0 ? 'conyuge' : 'hermano');
       poner(id, (i - k) * (ANCHO + HUECO), 0, ANCHO, cls);
     });
 
@@ -219,13 +220,17 @@
     if (estado.lateral && !esMovil()) w -= lateral.offsetWidth;
     return w;
   }
+  // Ajusta el zoom para que se vean todos los niveles sin desplazarse en vertical,
+  // y centra en horizontal la persona del centro (o el árbol entero, si cabe)
   function centrar() {
     if (!focoXY) return;
     var w = anchoVisible(), h = lienzo.clientHeight;
-    estado.tx = w / 2 - focoXY.x * estado.s;
+    var minimo = esMovil() ? 0.42 : 0.5;
+    estado.s = Math.max(minimo, Math.min(1, (h - 16) / tamMundo.h));
+    if (tamMundo.w * estado.s <= w) estado.tx = (w - tamMundo.w * estado.s) / 2;
+    else estado.tx = Math.min(0, Math.max(w - tamMundo.w * estado.s, w / 2 - focoXY.x * estado.s));
     var alto = tamMundo.h * estado.s;
-    if (alto <= h) estado.ty = (h - alto) / 2;
-    else estado.ty = Math.min(10, Math.max(h - alto - 10, h * 0.55 - focoXY.y * estado.s));
+    estado.ty = alto <= h ? (h - alto) / 2 : 8;
     aplicar();
   }
   function zoom(f, cx, cy) {
@@ -280,20 +285,21 @@
     var c = e.target.closest('.gn-caja[data-id]');
     if (!c) return;
     var id = c.getAttribute('data-id');
-    if (id === estado.foco) { abrirLateral(true); return; }
+    if (id === estado.sel) { abrirLateral(true); return; }
     seleccionar(id, true);
-    if (!esMovil()) abrirLateral(true);
+    if (!esMovil() && !estado.lateral) { abrirLateral(true); centrar(); }
   });
   app.querySelector('.gn-controles').addEventListener('click', function (e) {
     var b = e.target.closest('[data-ctrl]'); if (!b) return;
     var c = b.getAttribute('data-ctrl');
     if (c === 'mas') zoom(1.2); else if (c === 'menos') zoom(1 / 1.2);
-    else if (c === 'info') abrirLateral(!estado.lateral);
+    else if (c === 'info') { if (!estado.sel) seleccionar(estado.foco, true); abrirLateral(!estado.lateral || !estado.sel); }
     else centrar();
   });
 
   /* ---------------- panel lateral ---------------- */
   function abrirLateral(si) {
+    if (!estado.sel) si = false;
     estado.lateral = si;
     app.classList.toggle('sin-lateral', !si);
     if (si) pintarLateral();
@@ -411,7 +417,14 @@
     if (extra) l.appendChild(document.createTextNode(extra));
     return l;
   }
+  function sinSeleccion(el) {
+    el.innerHTML = '';
+    el.appendChild($('p', 'gn-vacio', 'Toque a una persona en el árbol para ver aquí su ' + (el === fichaEl ? 'ficha.' : 'cronología.')));
+    var b = $('button', 'gn-boton', 'Ir al árbol'); b.type = 'button'; b.setAttribute('data-tab-ir', 'arbol');
+    el.appendChild(b);
+  }
   function pintarFicha() {
+    if (!estado.sel) return sinSeleccion(fichaEl);
     var id = estado.foco, p = P[id], e = ev(id);
     fichaEl.innerHTML = '';
     var cab = $('div', 'gn-ficha-cab');
@@ -460,6 +473,9 @@
     if (p.fi) { var lf = $('li'); var a3 = $('a', '', 'Abrir esta ficha en una página aparte'); a3.href = 'personas/' + p.fi + '.html'; lf.appendChild(a3); u6.appendChild(lf); }
     b6.appendChild(u6);
   }
+  [fichaEl, cronoEl].forEach(function (el) {
+    el.addEventListener('click', function (e) { var t = e.target.closest('[data-tab-ir]'); if (t) cambiarTab('arbol', true); });
+  });
   fichaEl.addEventListener('click', function (e) { var t = e.target.closest('[data-ir]'); if (t) seleccionar(t.getAttribute('data-ir'), true); });
 
   /* ---------------- pestaña Cronología ---------------- */
@@ -470,6 +486,7 @@
     return y * 10000 + ((mm && MES[mm[1]]) || 0) * 100 + (m ? +m[1] : 0);
   }
   function pintarCronologia() {
+    if (!estado.sel) return sinSeleccion(cronoEl);
     var id = estado.foco, p = P[id], n0 = anioNac(id), sucesos = [];
     function add(fecha, titulo, quien, lugar) { var k = claveFecha(fecha); if (k) sucesos.push({ k: k, fecha: fecha, t: titulo, q: quien, l: lugar }); }
     function g(x, h, m) { return P[x].s === 'f' ? m : h; }
@@ -534,13 +551,19 @@
     if (historial) guardarDireccion();
   }
   function guardarDireccion() {
-    var h = '#' + estado.foco + (estado.tab !== 'arbol' ? '/' + estado.tab : '');
-    if (location.hash !== h) { try { history.pushState(null, '', h); } catch (x) { location.hash = h; } }
+    var h = estado.sel ? '#' + estado.sel + (estado.tab !== 'arbol' ? '/' + estado.tab : '') : (estado.tab !== 'arbol' ? '#/' + estado.tab : '');
+    if (location.hash !== h && !(h === '' && !location.hash)) {
+      try { history.pushState(null, '', h || location.pathname + location.search); } catch (x) { location.hash = h; }
+    }
+  }
+  function rotulo() {
+    etiqueta.textContent = estado.sel ? P[estado.sel].n : 'Toque a una persona para ver sus datos';
+    etiqueta.classList.toggle('vacio', !estado.sel);
   }
   function seleccionar(id, historial) {
     if (!P[id] || P[id].priv) return;
-    estado.foco = id;
-    etiqueta.textContent = P[id].n;
+    estado.foco = estado.sel = id;
+    rotulo();
     document.title = P[id].n + ' · Árbol de los Naranjo de Telde';
     if (estado.tab === 'arbol') { componerArbol(); centrar(); }
     else if (estado.tab === 'ficha') { pintarFicha(); app.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
@@ -575,8 +598,10 @@
     return { id: P[h[0]] && !P[h[0]].priv ? h[0] : null, tab: ['ficha', 'cronologia'].indexOf(h[1]) >= 0 ? h[1] : 'arbol' };
   }
   window.addEventListener('popstate', function () {
-    var d = leerDireccion(); estado.foco = d.id || app.getAttribute('data-inicio');
-    etiqueta.textContent = P[estado.foco].n;
+    var d = leerDireccion();
+    estado.sel = d.id; estado.foco = d.id || app.getAttribute('data-inicio');
+    rotulo();
+    if (!estado.sel) abrirLateral(false);
     cambiarTab(d.tab, false); if (estado.lateral) pintarLateral();
   });
   var espera, anchoPrevio = window.innerWidth;
@@ -591,12 +616,13 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (estado.tab === 'arbol') { componerArbol(); centrar(); } });
 
   // arranque
+  // al abrir sin dirección no hay nadie seleccionado: se ve el árbol entero desde la raíz
   var d0 = leerDireccion();
+  estado.sel = d0.id;
   estado.foco = d0.id || app.getAttribute('data-inicio');
-  estado.s = esMovil() ? 0.8 : 1;
-  estado.lateral = !esMovil();
+  estado.lateral = !!d0.id && !esMovil();
   app.classList.toggle('sin-lateral', !estado.lateral);
-  etiqueta.textContent = P[estado.foco].n;
+  rotulo();
   cambiarTab(d0.tab, false);
   if (estado.lateral) pintarLateral();
 })();
