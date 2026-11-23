@@ -1,477 +1,602 @@
-/* Árbol dinámico de los Naranjo.
-   Una persona en el centro; arriba sus padres, abuelos y bisabuelos; a su lado su pareja;
-   debajo sus hijos (y los nietos de las ramas abiertas). Pulsar a cualquiera lo pone en el centro.
-   Las líneas se dibujan en un SVG a partir de la posición real de cada recuadro, y todo
-   se recoloca con el ancho de la pantalla: nunca hay desplazamiento horizontal. */
+/* Árbol de los Naranjo, organizado como el árbol en línea de Geneanet:
+   - tres pestañas: Árbol, Ficha y Cronología, siempre de la persona seleccionada;
+   - el árbol es un lienzo que se arrastra y se amplía; arriba los antepasados (cuatro generaciones),
+     en el centro la persona con sus hermanos y su pareja, y debajo sus hijos;
+   - al tocar a alguien el árbol se rehace a su alrededor y el panel lateral derecho muestra
+     sus datos («Individuo») o su familia («Familia»). */
 (function () {
   'use strict';
-  var D = window.ARBOL, P = D && D.personas;
-  var raiz = document.getElementById('arbol');
-  var panel = document.getElementById('ficha-breve');
-  if (!P || !raiz) return;
+  var D = window.ARBOL, P = D && D.personas, app = document.getElementById('app');
+  if (!P || !app) return;
   var NS = 'http://www.w3.org/2000/svg';
-  var INICIO = raiz.getAttribute('data-inicio');
-  var foco = null, abiertos = {}, anchoPrevio = 0, svg = null;
+  var lienzo = document.getElementById('lienzo'), lateral = document.getElementById('lateral');
+  var fichaEl = document.getElementById('ficha'), cronoEl = document.getElementById('cronologia');
+  var etiqueta = document.getElementById('gn-nombre');
+
+  var estado = { foco: null, tab: 'arbol', lado: 'individuo', s: 1, tx: 0, ty: 0, lateral: true };
+  var mundo = null, focoXY = null, tamMundo = { w: 0, h: 0 };
 
   /* ---------------- utilidades ---------------- */
-  function crear(tag, cls, txt) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (txt != null) e.textContent = txt;
-    return e;
-  }
-  function lista(id, campo) { return (P[id] && P[id][campo]) || []; }
+  function $(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function lista(id, c) { return (P[id] && P[id][c]) || []; }
+  function ev(id) { return (P[id] && P[id].e) || {}; }
+  function esMovil() { return window.innerWidth < 760; }
+  function anio(t) { var m = /(\d{4})/.exec(t || ''); return m ? +m[1] : null; }
   function padresOrden(id) {
-    var ps = lista(id, 'p'), pa = null, ma = null;
-    ps.forEach(function (x) { if (P[x].s === 'f') { if (!ma) ma = x; else if (!pa) pa = x; } else { if (!pa) pa = x; else if (!ma) ma = x; } });
+    var pa = null, ma = null;
+    lista(id, 'p').forEach(function (x) { if (P[x].s === 'f') { if (!ma) ma = x; else if (!pa) pa = x; } else { if (!pa) pa = x; else if (!ma) ma = x; } });
     return [pa, ma];
   }
-  function hermanos(id) {
+  function hermanosCon(id) {
+    var ps = lista(id, 'p');
+    if (!ps.length) return [id];
     var vistos = {}, r = [];
-    lista(id, 'p').forEach(function (p) {
-      lista(p, 'h').forEach(function (h) { if (h !== id && !vistos[h]) { vistos[h] = 1; r.push(h); } });
-    });
-    return r;
+    ps.forEach(function (p) { lista(p, 'h').forEach(function (h) { if (!vistos[h]) { vistos[h] = 1; r.push(h); } }); });
+    if (r.indexOf(id) < 0) r.push(id);
+    return r.sort(function (a, b) { return (anioNac(a) || 9999) - (anioNac(b) || 9999); });
   }
-  function plural(n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); }
+  function anioNac(id) {
+    var e = ev(id);
+    if (e.n && anio(e.n[0])) return anio(e.n[0]);
+    var f = P[id].f || '';
+    return f.charAt(0) === '†' ? null : anio(f);
+  }
+  function anioMuerte(id) {
+    var e = ev(id);
+    if (e.d && anio(e.d[0])) return anio(e.d[0]);
+    var f = P[id].f || '', ys = f.match(/\d{4}/g) || [];
+    if (f.charAt(0) === '†') return ys[0] ? +ys[0] : null;
+    return ys.length > 1 ? +ys[ys.length - 1] : null;
+  }
+  var SILUETA = {
+    m: '<svg viewBox="0 0 40 48" aria-hidden="true"><circle cx="20" cy="15" r="9"/><path d="M3 48c0-11 7.5-18 17-18s17 7 17 18z"/></svg>',
+    f: '<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M20 4C12 4 8.5 9.5 8.5 17c0 6 .5 10-3 14h29c-3.5-4-3-8-3-14C31.5 9.5 28 4 20 4z"/><circle class="cara" cx="20" cy="16.5" r="7.2"/><path d="M3 48c0-10 7.5-16 17-16s17 6 17 16z"/></svg>'
+  };
+  function retrato(id, cls) {
+    var p = P[id], s = $('span', cls || 'gn-foto');
+    if (p.fo) { var im = $('img'); im.src = p.fo; im.alt = ''; im.loading = 'lazy'; s.appendChild(im); }
+    else s.innerHTML = SILUETA[p.s === 'f' ? 'f' : 'm'];
+    return s;
+  }
+  function boton(id, texto, cls) {
+    var b = $('button', cls || 'gn-enlace', texto || P[id].n);
+    b.type = 'button'; b.setAttribute('data-ir', id);
+    return b;
+  }
 
-  /* ---------------- recuadros ---------------- */
+  /* ---------------- árbol: cajas ---------------- */
   function caja(id, extra) {
     var p = P[id];
-    var e = crear(p.priv ? 'span' : 'button', 'nodo' + (p.nj ? ' naranjo' : '') + (p.v ? ' verde' : '') + (p.priv ? ' privado' : '') + (extra ? ' ' + extra : ''));
-    if (!p.priv) e.type = 'button';
-    e.setAttribute('data-id', id);
+    var e = $(p.priv ? 'span' : 'button', 'gn-caja ' + (p.s === 'f' ? 'mujer' : 'hombre') + (p.nj ? ' naranjo' : '') + (extra ? ' ' + extra : '') + (p.priv ? ' privado' : ''));
+    if (!p.priv) { e.type = 'button'; e.setAttribute('data-id', id); }
     e.title = p.n + (p.f ? ' (' + p.f + ')' : '');
-    if (p.fo) { var im = crear('img'); im.src = p.fo; im.alt = ''; im.loading = 'lazy'; e.appendChild(im); }
-    var t = crear('span', 'txt');
-    t.appendChild(crear('span', 'nom', p.n));
-    if (p.f) t.appendChild(crear('span', 'fec', p.f));
+    if (!p.priv) e.appendChild(retrato(id));
+    var t = $('span', 'gn-txt');
+    t.appendChild($('span', 'gn-nom', p.n));
+    if (p.f) t.appendChild($('span', 'gn-fec', p.f));
     e.appendChild(t);
     return e;
   }
 
-  // Los Naranjo se muestran con toda su descendencia; las ramas de otros apellidos, plegadas
-  function abierto(id) {
-    if (abiertos.hasOwnProperty(id)) return abiertos[id];
-    return !!P[id].nj;
-  }
+  var ANCHO = 176, HUECO = 14, ENTRE = 52;
+  var ANCHO_GEN = [ANCHO, ANCHO, ANCHO, 158, 140];
 
-  function conDescendencia(id, nivel) { return lista(id, 'h').length > 0 && nivel < 30 && abierto(id); }
+  function componerArbol() {
+    var foco = estado.foco, G = 4, cajas = [], mostrados = {};
+    function poner(id, x, fila, w, cls) { cajas.push({ id: id, x: x, fila: fila, w: w, cls: cls || '' }); mostrados[id] = true; }
 
-  // Si ningún hijo tiene su rama abierta, los hijos van en fila y centrados.
-  // Si alguno la tiene, la familia se escalona: una línea baja por la izquierda y de ella
-  // salen los hijos; los que no tienen rama abierta se agrupan en filas.
-  function contenedor(base, ids, nivel) {
-    var c = crear('div', base);
-    if (!ids.some(function (h) { return conDescendencia(h, nivel); })) {
-      ids.forEach(function (h) { c.appendChild(unidad(h, nivel)); });
-      return c;
+    // antepasados: cada pareja centrada sobre su hijo; los huecos sin datos no ocupan sitio
+    var memo = {};
+    function anchoSub(id, g) {
+      var k = id + '/' + g;
+      if (memo[k] != null) return memo[k];
+      var ps = g < G ? padresOrden(id).filter(Boolean) : [];
+      var bloque = ps.reduce(function (s, p) { return s + anchoSub(p, g + 1); }, 0) + HUECO * Math.max(0, ps.length - 1);
+      return (memo[k] = Math.max(ANCHO_GEN[g], bloque));
     }
-    c.classList.add('indentado');
-    var grupo = null;
-    ids.forEach(function (h) {
-      var u = unidad(h, nivel);
-      if (conDescendencia(h, nivel)) { grupo = null; c.appendChild(u); }
-      else {
-        if (!grupo) { grupo = crear('div', 'grupo-hojas'); c.appendChild(grupo); }
-        grupo.appendChild(u);
-      }
-    });
-    return c;
-  }
-
-  function unidad(id, nivel) {
-    var u = crear('div', 'unidad');
-    u.setAttribute('data-u', id);
-    var par = crear('div', 'pareja');
-    par.appendChild(caja(id, 'hijo'));
-    lista(id, 'c').forEach(function (c) { par.appendChild(caja(c, 'conyuge')); });
-    u.appendChild(par);
-    var hs = lista(id, 'h');
-    if (hs.length) {
-      if (nivel < 30 && abierto(id)) {
-        var sub = contenedor('hijos', hs, nivel + 1);
-        if (sub.classList.contains('indentado')) u.classList.add('izq');
-        u.appendChild(sub);
-        if (abiertos[id] === true) {   // abierta a mano: se puede volver a plegar
-          var cerrar = crear('button', 'desplegar abierto', '▴ plegar los hijos de ' + P[id].n.split(' ')[0]);
-          cerrar.type = 'button'; cerrar.setAttribute('data-plegar', id);
-          u.appendChild(cerrar);
-        }
-      } else {
-        var b = crear('button', 'desplegar', '▾ ver ' + plural(hs.length, 'hijo', 'hijos'));
-        b.type = 'button'; b.setAttribute('data-desplegar', id);
-        b.title = 'Mostrar los hijos de ' + P[id].n;
-        u.appendChild(b);
-      }
-    }
-    return u;
-  }
-
-  /* ---------------- composición ---------------- */
-  function componer() {
-    raiz.innerHTML = '';
-    anchoPrevio = raiz.clientWidth;
-    var niveles = anchoPrevio >= 700 ? 3 : 2;
-    svg = document.createElementNS(NS, 'svg');
-    svg.setAttribute('class', 'lineas'); svg.setAttribute('aria-hidden', 'true');
-    raiz.appendChild(svg);
-
-    // antepasados: fila L tiene 2^L huecos; los padres de la casilla k están en 2k y 2k+1
-    var filas = [], actual = [foco];
-    for (var L = 1; L <= niveles; L++) {
-      var sig = [];
-      actual.forEach(function (id) { var pp = id ? padresOrden(id) : [null, null]; sig.push(pp[0], pp[1]); });
-      if (!sig.some(Boolean)) break;
-      filas[L] = sig; actual = sig;
-    }
-    var asc = crear('div', 'asc');
-    for (L = filas.length - 1; L >= 1; L--) {
-      var fila = crear('div', 'fila-asc');
-      fila.style.setProperty('--n', filas[L].length);
-      filas[L].forEach(function (id, j) {
-        var h = crear('div', 'hueco');
-        if (id) {
-          var c = caja(id, 'asc');
-          c.setAttribute('data-slot', L + '-' + j);
-          h.appendChild(c);
-        }
-        fila.appendChild(h);
-      });
-      asc.appendChild(fila);
-    }
-    raiz.appendChild(asc);
-
-    // la persona en el centro, su pareja a la derecha y sus hermanos a la izquierda
-    var ff = crear('div', 'fila-foco');
-    var izq = crear('div', 'lado izq'), cen = crear('div', 'centro'), der = crear('div', 'lado der');
-    var hs = hermanos(foco);
-    if (hs.length) {
-      var bh = crear('button', 'ver-hermanos', '⇆ ' + plural(hs.length, 'hermano', 'hermanos'));
-      bh.type = 'button'; bh.setAttribute('data-hermanos', '1');
-      izq.appendChild(bh);
-    }
-    var cf = caja(foco, 'foco'); cf.setAttribute('data-slot', '0-0'); cf.setAttribute('aria-current', 'true');
-    cen.appendChild(cf);
-    lista(foco, 'c').forEach(function (c) { der.appendChild(caja(c, 'conyuge')); });
-    ff.appendChild(izq); ff.appendChild(cen); ff.appendChild(der);
-    raiz.appendChild(ff);
-
-    // descendientes
-    var hijos = lista(foco, 'h');
-    if (hijos.length) {
-      raiz.appendChild(contenedor('desc', hijos, 1));
-    } else {
-      raiz.appendChild(crear('p', 'sin-hijos', 'No constan hijos en el árbol.'));
-    }
-    dibujar();
-  }
-
-  /* ---------------- líneas ---------------- */
-  function rect(e) {
-    var r = e.getBoundingClientRect(), c = raiz.getBoundingClientRect();
-    return { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height, r: r.right - c.left, b: r.bottom - c.top, cx: r.left - c.left + r.width / 2, cy: r.top - c.top + r.height / 2 };
-  }
-  function trazo(d, cls) {
-    var p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', d); p.setAttribute('class', 'trazo' + (cls ? ' ' + cls : ''));
-    svg.appendChild(p);
-  }
-  function esVerde(a, b) { return P[a] && P[b] && P[a].v && P[b].v; }
-
-  // pareja: barra entre los dos recuadros y punto del que bajan los hijos
-  function anclaPareja(caja1, conyuges) {
-    var a = rect(caja1);
-    if (conyuges.length === 1) {
-      var b = rect(conyuges[0]);
-      if (Math.abs(a.cy - b.cy) < Math.min(a.h, b.h) / 2 && (a.r < b.x || b.r < a.x)) {
-        var i = a.r < b.x ? a : b, d = a.r < b.x ? b : a;
-        trazo('M' + i.r + ' ' + i.cy + ' H' + d.x, 'union');
-        return { x: (i.r + d.x) / 2, y: i.cy };
-      }
-    }
-    conyuges.forEach(function (c) {
-      var b = rect(c);
-      if (b.x > a.r) trazo('M' + a.r + ' ' + a.cy + ' H' + (a.r + b.x) / 2 + ' V' + b.cy + ' H' + b.x, 'union');
-      else if (b.y > a.b) trazo('M' + b.cx + ' ' + b.y + ' V' + a.b, 'union');
-    });
-    return { x: a.cx, y: a.b };
-  }
-
-  // de una pareja a sus hijos, aunque los hijos ocupen varias filas
-  function bajar(ancla, unidades, idPadre, em) {
-    if (!unidades.length) return;
-    var filas = [];
-    unidades.forEach(function (u) {
-      var r = rect(u), f = filas.filter(function (f) { return Math.abs(f.y - r.y) < 3; })[0];
-      if (!f) { f = { y: r.y, us: [] }; filas.push(f); }
-      f.us.push({ el: u, r: r });
-    });
-    filas.sort(function (a, b) { return a.y - b.y; });
-    var x = ancla.x, y = ancla.y, W = raiz.clientWidth;
-    filas.forEach(function (f, n) {
-      f.us.sort(function (a, b) { return a.r.x - b.r.x; });
-      var bus = f.y - 1.2 * em;
-      if (n > 0) {
-        // buscar un hueco entre las unidades de la fila anterior para bajar sin cruzar recuadros
-        var prev = filas[n - 1].us, cand = [Math.max(2, prev[0].r.x - 0.5 * em), Math.min(W - 2, prev[prev.length - 1].r.r + 0.5 * em)];
-        for (var i = 0; i + 1 < prev.length; i++) cand.push((prev[i].r.r + prev[i + 1].r.x) / 2);
-        var gx = cand.reduce(function (m, c) { return Math.abs(c - x) < Math.abs(m - x) ? c : m; }, cand[0]);
-        trazo('M' + x + ' ' + y + ' H' + gx, '');
-        x = gx;
-      }
-      trazo('M' + x + ' ' + y + ' V' + bus, '');
-      var xs = [x];
-      f.us.forEach(function (u) {
-        var hijo = u.el.querySelector('.nodo.hijo'), r = rect(hijo), id = hijo.getAttribute('data-id');
-        xs.push(r.cx);
-        trazo('M' + r.cx + ' ' + bus + ' V' + (r.y - 1), esVerde(idPadre, id) ? 'verde' : '');
-      });
-      trazo('M' + Math.min.apply(null, xs) + ' ' + bus + ' H' + Math.max.apply(null, xs), '');
-      // si la rama verde pasa por esta fila, se repasa en verde su tramo
-      var verdes = f.us.filter(function (u) { return esVerde(idPadre, u.el.getAttribute('data-u')); });
-      if (verdes.length) {
-        var vx = verdes.map(function (u) { return rect(u.el.querySelector('.nodo.hijo')).cx; }).concat([x]);
-        trazo('M' + Math.min.apply(null, vx) + ' ' + bus + ' H' + Math.max.apply(null, vx), 'verde');
-        trazo('M' + x + ' ' + y + ' V' + bus, 'verde');
-      }
-      y = bus;
-    });
-  }
-
-  function dibujar() {
-    if (!svg) return;
-    while (svg.firstChild) svg.removeChild(svg.firstChild);
-    var c = raiz.getBoundingClientRect();
-    svg.setAttribute('width', c.width); svg.setAttribute('height', c.height);
-    svg.setAttribute('viewBox', '0 0 ' + c.width + ' ' + c.height);
-    var em = parseFloat(getComputedStyle(raiz).fontSize) || 12;
-
-    // antepasados: cada pareja baja a su hijo
-    var slots = {};
-    Array.prototype.forEach.call(raiz.querySelectorAll('[data-slot]'), function (e) { slots[e.getAttribute('data-slot')] = e; });
-    Object.keys(slots).forEach(function (k) {
-      var L = +k.split('-')[0], j = +k.split('-')[1];
-      var hijo = slots[k], pa = slots[(L + 1) + '-' + (2 * j)], ma = slots[(L + 1) + '-' + (2 * j + 1)];
-      var ps = [pa, ma].filter(Boolean);
+    function ponerPadres(id, g, cx) {
+      if (g >= G) return;
+      var ps = padresOrden(id).filter(Boolean);
       if (!ps.length) return;
-      var h = rect(hijo), rs = ps.map(rect);
-      var idH = hijo.getAttribute('data-id');
-      var verde = ps.some(function (p) { return esVerde(p.getAttribute('data-id'), idH); }) ? 'verde' : '';
-      var baseP = Math.max.apply(null, rs.map(function (r) { return r.b; }));
-      var barra = baseP + Math.min(0.8 * em, (h.y - baseP) * 0.35);
-      var xs = rs.map(function (r) { return r.cx; });
+      var bloque = ps.reduce(function (s, p) { return s + anchoSub(p, g + 1); }, 0) + HUECO * (ps.length - 1);
+      var x = cx - bloque / 2;
+      ps.forEach(function (p) {
+        var w = anchoSub(p, g + 1);
+        poner(p, x + w / 2, -(g + 1), ANCHO_GEN[g + 1], 'asc');
+        ponerPadres(p, g + 1, x + w / 2);
+        x += w + HUECO;
+      });
+    }
+    ponerPadres(foco, 0, 0);
+
+    // fila central: hermanos por orden de nacimiento; la pareja, junto a la persona
+    var fila = hermanosCon(foco), k = fila.indexOf(foco);
+    var conyuges = lista(foco, 'c');
+    fila = fila.slice(0, k + 1).concat(conyuges.filter(function (c) { return fila.indexOf(c) < 0; }), fila.slice(k + 1));
+    fila.forEach(function (id, i) {
+      var cls = id === foco ? 'foco' : (conyuges.indexOf(id) >= 0 ? 'conyuge' : 'hermano');
+      poner(id, (i - k) * (ANCHO + HUECO), 0, ANCHO, cls);
+    });
+
+    // hijos, centrados bajo la pareja
+    var hijos = lista(foco, 'h');
+    var cxPareja = conyuges.length ? (ANCHO + HUECO) / 2 : 0;
+    var totalH = hijos.length * ANCHO + (hijos.length - 1) * HUECO;
+    hijos.forEach(function (h, i) { poner(h, cxPareja - totalH / 2 + ANCHO / 2 + i * (ANCHO + HUECO), 1, ANCHO, 'hijo'); });
+
+    // dibujar las cajas para medir su alto
+    mundo = $('div', 'gn-mundo');
+    var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'gn-lineas'); svg.setAttribute('aria-hidden', 'true');
+    mundo.appendChild(svg);
+    lienzo.innerHTML = '';
+    lienzo.appendChild(mundo);
+    var minX = Infinity, maxX = -Infinity;
+    cajas.forEach(function (c) {
+      var mas = lista(c.id, 'p').concat(lista(c.id, 'h'), lista(c.id, 'c')).some(function (x) { return !mostrados[x] && P[x] && !P[x].priv; });
+      c.el = caja(c.id, c.cls + (mas ? ' mas' : ''));
+      c.el.style.width = c.w + 'px';
+      mundo.appendChild(c.el);
+      minX = Math.min(minX, c.x - c.w / 2); maxX = Math.max(maxX, c.x + c.w / 2);
+    });
+    var filas = {};
+    cajas.forEach(function (c) { c.h = c.el.offsetHeight; filas[c.fila] = Math.max(filas[c.fila] || 0, c.h); });
+    var orden = Object.keys(filas).map(Number).sort(function (a, b) { return a - b; });
+    var topFila = {}, y = 24;
+    orden.forEach(function (f) { topFila[f] = y; y += filas[f] + ENTRE; });
+    var margen = 30, dx = margen - minX;
+    cajas.forEach(function (c) {
+      c.cx = c.x + dx; c.left = c.cx - c.w / 2; c.top = topFila[c.fila];
+      c.el.style.left = c.left + 'px'; c.el.style.top = c.top + 'px';
+    });
+    tamMundo = { w: maxX - minX + 2 * margen, h: y - ENTRE + 24 };
+    mundo.style.width = tamMundo.w + 'px'; mundo.style.height = tamMundo.h + 'px';
+    svg.setAttribute('width', tamMundo.w); svg.setAttribute('height', tamMundo.h);
+
+    // líneas
+    var porId = {};
+    cajas.forEach(function (c) { porId[c.id + '|' + c.fila] = c; });
+    function trazo(d, verde) { var p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); p.setAttribute('class', verde ? 'verde' : ''); svg.appendChild(p); }
+    function v(a, b) { return P[a] && P[b] && P[a].v && P[b].v; }
+    function horquilla(padres, hijosC, idHijoRef) {
+      if (!padres.length || !hijosC.length) return;
+      var baseP = Math.max.apply(null, padres.map(function (p) { return p.top + p.h; }));
+      var topH = Math.min.apply(null, hijosC.map(function (h) { return h.top; }));
+      var barra = baseP + 10, bus = topH - 16;
+      var xs = padres.map(function (p) { return p.cx; });
       var xm = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2;
-      rs.forEach(function (r) { trazo('M' + r.cx + ' ' + r.b + ' V' + barra, verde); });
-      if (rs.length > 1) trazo('M' + Math.min.apply(null, xs) + ' ' + barra + ' H' + Math.max.apply(null, xs), verde);
-      var medio = barra + (h.y - barra) / 2;
-      trazo('M' + xm + ' ' + barra + ' V' + medio + ' H' + h.cx + ' V' + (h.y - 1), verde);
-    });
-
-    // la persona del centro y su pareja
-    var cf = raiz.querySelector('.nodo.foco');
-    var conyF = Array.prototype.slice.call(raiz.querySelectorAll('.fila-foco .der .nodo'));
-    var ancla = anclaPareja(cf, conyF);
-    var desc = raiz.querySelector('.desc');
-    if (desc) {
-      conectar(ancla, desc, foco, em);
-      // cada hijo con su pareja y, si la rama está abierta, con sus propios hijos
-      Array.prototype.forEach.call(desc.querySelectorAll('.unidad'), function (u) {
-        var hijo = u.querySelector(':scope > .pareja > .nodo.hijo');
-        var cs = Array.prototype.slice.call(u.querySelectorAll(':scope > .pareja > .nodo.conyuge'));
-        var a = anclaPareja(hijo, cs);
-        var sub = u.querySelector(':scope > .hijos');
-        if (sub) conectar(a, sub, u.getAttribute('data-u'), em);
-      });
-    }
-  }
-
-  function conectar(ancla, cont, idPadre, em) {
-    if (!cont.classList.contains('indentado')) {
-      bajar(ancla, Array.prototype.slice.call(cont.children), idPadre, em);
-      return;
-    }
-    // familia escalonada: línea vertical a la izquierda y ramales hacia cada hijo
-    var c = rect(cont), tx = c.x + 0.9 * em, y0 = c.y + 0.9 * em;
-    var fin = y0, finVerde = null, algunoVerde = false;
-    function cajaHijo(u) { return u.querySelector(':scope > .pareja > .nodo.hijo'); }
-    Array.prototype.forEach.call(cont.children, function (el) {
-      if (el.classList.contains('unidad')) {
-        var hb = cajaHijo(el), b = rect(hb), v = esVerde(idPadre, hb.getAttribute('data-id'));
-        trazo('M' + tx + ' ' + b.cy + ' H' + b.x, v ? 'verde' : '');
-        fin = Math.max(fin, b.cy);
-        if (v) { algunoVerde = true; finVerde = Math.max(finVerde || 0, b.cy); }
-        return;
+      var verdeP = padres.some(function (p) { return P[p.id].v; });
+      padres.forEach(function (p) { trazo('M' + p.cx + ' ' + (p.top + p.h) + 'V' + barra, P[p.id].v && hijosC.some(function (h) { return v(p.id, h.id); })); });
+      if (padres.length > 1) trazo('M' + Math.min.apply(null, xs) + ' ' + barra + 'H' + Math.max.apply(null, xs), verdeP && hijosC.some(function (h) { return P[h.id].v; }));
+      var hx = hijosC.map(function (h) { return h.cx; });
+      trazo('M' + xm + ' ' + barra + 'V' + bus, false);
+      trazo('M' + Math.min.apply(null, hx.concat([xm])) + ' ' + bus + 'H' + Math.max.apply(null, hx.concat([xm])), false);
+      hijosC.forEach(function (h) { trazo('M' + h.cx + ' ' + bus + 'V' + h.top, false); });
+      var verdes = hijosC.filter(function (h) { return padres.some(function (p) { return v(p.id, h.id); }); });
+      if (verdes.length) {
+        trazo('M' + xm + ' ' + barra + 'V' + bus, true);
+        verdes.forEach(function (h) { trazo('M' + xm + ' ' + bus + 'H' + h.cx + 'V' + h.top, true); });
       }
-      // grupo de hijos sin rama abierta: una barra por cada fila del grupo
-      var filas = [];
-      Array.prototype.forEach.call(el.children, function (u) {
-        var hb = cajaHijo(u), b = rect(hb), f = filas.filter(function (f) { return Math.abs(f.y - rect(u).y) < 3; })[0];
-        if (!f) { f = { y: rect(u).y, hs: [] }; filas.push(f); }
-        f.hs.push({ b: b, id: hb.getAttribute('data-id') });
-      });
-      filas.forEach(function (f) {
-        var bus = f.y - 1.1 * em, xmax = tx, vmax = null;
-        f.hs.forEach(function (h) {
-          var v = esVerde(idPadre, h.id);
-          trazo('M' + h.b.cx + ' ' + bus + ' V' + (h.b.y - 1), v ? 'verde' : '');
-          xmax = Math.max(xmax, h.b.cx);
-          if (v) vmax = Math.max(vmax || 0, h.b.cx);
-        });
-        trazo('M' + tx + ' ' + bus + ' H' + xmax, '');
-        if (vmax !== null) { trazo('M' + tx + ' ' + bus + ' H' + vmax, 'verde'); algunoVerde = true; finVerde = Math.max(finVerde || 0, bus); }
-        fin = Math.max(fin, bus);
-      });
+    }
+    // antepasados (filas -1 a -4): cada persona con sus padres
+    cajas.forEach(function (c) {
+      if (c.fila > 0 || c.fila <= -G) return;
+      if (c.fila === 0 && c.id !== foco) return;
+      var ps = lista(c.id, 'p').map(function (p) { return porId[p + '|' + (c.fila - 1)]; }).filter(Boolean);
+      if (!ps.length) return;
+      if (c.fila === 0) {
+        // los padres de la persona central bajan a todos sus hermanos
+        var hs = cajas.filter(function (x) { return x.fila === 0 && (x.cls.indexOf('hermano') >= 0 || x.id === foco) && lista(x.id, 'p').some(function (p) { return ps.some(function (q) { return q.id === p; }); }); });
+        horquilla(ps, hs);
+      } else horquilla(ps, [c]);
     });
-    var bajada = 'M' + ancla.x + ' ' + ancla.y + ' V' + y0 + ' H' + tx;
-    trazo(bajada, ''); trazo('M' + tx + ' ' + y0 + ' V' + fin, '');
-    if (algunoVerde) { trazo(bajada, 'verde'); trazo('M' + tx + ' ' + y0 + ' V' + finVerde, 'verde'); }
+    // pareja
+    var cf = porId[foco + '|0'];
+    conyuges.forEach(function (cid, i) {
+      var cc = porId[cid + '|0']; if (!cc) return;
+      var y = cf.top + Math.min(cf.h, cc.h) / 2 + i * 6;
+      trazo('M' + (cf.left + cf.w) + ' ' + y + 'H' + cc.left, P[foco].v && P[cid].v);
+    });
+    // hijos
+    var hc = cajas.filter(function (c) { return c.fila === 1; });
+    if (hc.length) {
+      var c1 = conyuges.length ? porId[conyuges[0] + '|0'] : null;
+      var ancla = c1 ? { cx: (cf.left + cf.w + c1.left) / 2, top: 0, h: 0, id: foco } : cf;
+      if (c1) {
+        var yU = cf.top + Math.min(cf.h, c1.h) / 2, baseF = Math.max(cf.top + cf.h, c1.top + c1.h);
+        var verdeH = hc.some(function (h) { return P[h.id].v; }) && P[foco].v;
+        trazo('M' + ancla.cx + ' ' + yU + 'V' + (baseF + 10), verdeH);
+        horquilla([{ cx: ancla.cx, top: baseF + 10, h: 0, id: foco }], hc);
+      } else horquilla([cf], hc);
+    }
+    focoXY = { x: cf.cx, y: cf.top + cf.h / 2 };
+    mundo.classList.add('entra');
   }
 
-  /* ---------------- ficha breve (debajo del árbol) ---------------- */
-  function enlaces(ids) {
-    var f = document.createDocumentFragment();
-    ids.forEach(function (id, n) {
-      if (n) f.appendChild(document.createTextNode(' · '));
-      var p = P[id];
-      if (p.priv) { f.appendChild(crear('span', 'privado', p.n + ' (' + p.f + ')')); return; }
-      var b = crear('button', 'enlace-persona' + (p.nj ? ' naranjo' : ''), p.n);
-      b.type = 'button'; b.setAttribute('data-id', id);
-      f.appendChild(b);
-      if (p.f) f.appendChild(crear('span', 'fec', ' ' + p.f));
-    });
-    return f;
+  /* ---------------- árbol: mover y ampliar ---------------- */
+  function aplicar() { if (mundo) mundo.style.transform = 'translate(' + estado.tx + 'px,' + estado.ty + 'px) scale(' + estado.s + ')'; }
+  function anchoVisible() {
+    var w = lienzo.clientWidth;
+    if (estado.lateral && !esMovil()) w -= lateral.offsetWidth;
+    return w;
   }
-  function fila(dl, titulo, ids) {
-    if (!ids.length) return;
-    dl.appendChild(crear('dt', '', titulo));
-    var dd = crear('dd'); dd.appendChild(enlaces(ids)); dl.appendChild(dd);
+  function centrar() {
+    if (!focoXY) return;
+    var w = anchoVisible(), h = lienzo.clientHeight;
+    estado.tx = w / 2 - focoXY.x * estado.s;
+    var alto = tamMundo.h * estado.s;
+    if (alto <= h) estado.ty = (h - alto) / 2;
+    else estado.ty = Math.min(10, Math.max(h - alto - 10, h * 0.55 - focoXY.y * estado.s));
+    aplicar();
   }
-  function ficha() {
-    if (!panel) return;
-    var p = P[foco];
-    panel.innerHTML = '';
-    var cab = crear('div', 'cab');
-    if (p.fo) { var im = crear('img', 'retrato-mini'); im.src = p.fo; im.alt = 'Retrato de ' + p.n; cab.appendChild(im); }
-    var tt = crear('div');
-    tt.appendChild(crear('h2', '', p.n));
-    var linea = [p.f, p.l].filter(Boolean).join(' · ');
-    if (linea) tt.appendChild(crear('p', 'fechas', linea));
+  function zoom(f, cx, cy) {
+    var s = Math.max(0.3, Math.min(1.8, estado.s * f));
+    if (cx == null) { cx = anchoVisible() / 2; cy = lienzo.clientHeight / 2; }
+    estado.tx = cx - (cx - estado.tx) * (s / estado.s);
+    estado.ty = cy - (cy - estado.ty) * (s / estado.s);
+    estado.s = s; aplicar();
+  }
+
+  var punteros = {}, arrastre = null, movido = false, pinza = null;
+  lienzo.addEventListener('pointerdown', function (e) {
+    punteros[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ids = Object.keys(punteros);
+    if (ids.length === 1) { arrastre = { x: e.clientX, y: e.clientY, tx: estado.tx, ty: estado.ty }; movido = false; }
+    if (ids.length === 2) {
+      var a = punteros[ids[0]], b = punteros[ids[1]];
+      pinza = { d: Math.hypot(a.x - b.x, a.y - b.y), s: estado.s }; arrastre = null;
+    }
+  });
+  lienzo.addEventListener('pointermove', function (e) {
+    if (!punteros[e.pointerId]) return;
+    punteros[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ids = Object.keys(punteros);
+    if (pinza && ids.length === 2) {
+      var a = punteros[ids[0]], b = punteros[ids[1]], r = lienzo.getBoundingClientRect();
+      var d = Math.hypot(a.x - b.x, a.y - b.y);
+      zoom((pinza.s * d / pinza.d) / estado.s, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top);
+      movido = true; return;
+    }
+    if (!arrastre) return;
+    var dx = e.clientX - arrastre.x, dy = e.clientY - arrastre.y;
+    if (!movido && Math.abs(dx) + Math.abs(dy) < 6) return;
+    if (!movido) { movido = true; try { lienzo.setPointerCapture(e.pointerId); } catch (x) {} lienzo.classList.add('arrastrando'); }
+    estado.tx = arrastre.tx + dx; estado.ty = arrastre.ty + dy; aplicar();
+  });
+  function soltar(e) {
+    delete punteros[e.pointerId];
+    if (Object.keys(punteros).length < 2) pinza = null;
+    if (!Object.keys(punteros).length) { arrastre = null; lienzo.classList.remove('arrastrando'); }
+  }
+  lienzo.addEventListener('pointerup', soltar);
+  lienzo.addEventListener('pointercancel', soltar);
+  lienzo.addEventListener('wheel', function (e) {
+    if (!e.ctrlKey && !e.metaKey) return;          // con la rueda sola la página se desplaza como siempre
+    e.preventDefault();
+    var r = lienzo.getBoundingClientRect();
+    zoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  lienzo.addEventListener('click', function (e) {
+    if (movido) { movido = false; return; }
+    var c = e.target.closest('.gn-caja[data-id]');
+    if (!c) return;
+    var id = c.getAttribute('data-id');
+    if (id === estado.foco) { abrirLateral(true); return; }
+    seleccionar(id, true);
+    if (!esMovil()) abrirLateral(true);
+  });
+  app.querySelector('.gn-controles').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ctrl]'); if (!b) return;
+    var c = b.getAttribute('data-ctrl');
+    if (c === 'mas') zoom(1.2); else if (c === 'menos') zoom(1 / 1.2);
+    else if (c === 'info') abrirLateral(!estado.lateral);
+    else centrar();
+  });
+
+  /* ---------------- panel lateral ---------------- */
+  function abrirLateral(si) {
+    estado.lateral = si;
+    app.classList.toggle('sin-lateral', !si);
+    if (si) pintarLateral();
+  }
+  function seccion(titulo, fecha, lineas, ir) {
+    var s = $('div', 'gn-hecho');
+    var cab = $('div', 'gn-hecho-cab');
+    cab.appendChild($('span', 'gn-hecho-tit', titulo));
+    if (fecha) cab.appendChild($('span', 'gn-hecho-fecha', fecha));
+    s.appendChild(cab);
+    lineas.forEach(function (l) { if (l) { if (typeof l === 'string') s.appendChild($('p', '', l)); else s.appendChild(l); } });
+    return s;
+  }
+  function tarjeta(id, detalle) {
+    var p = P[id], b = $(p.priv ? 'div' : 'button', 'gn-tarjeta ' + (p.s === 'f' ? 'mujer' : 'hombre') + (p.nj ? ' naranjo' : ''));
+    if (!p.priv) { b.type = 'button'; b.setAttribute('data-ir', id); }
+    if (!p.priv) b.appendChild(retrato(id));
+    var t = $('span', 'gn-txt');
+    t.appendChild($('b', '', p.n));
+    var e = ev(id), info = detalle || [e.n ? ('✶ ' + [e.n[0], e.n[1]].filter(Boolean).join(' · ')) : '', p.f && !e.n ? p.f : ''].filter(Boolean).join(' ');
+    if (info) t.appendChild($('small', '', info));
+    b.appendChild(t);
+    return b;
+  }
+  function pintarLateral() {
+    var id = estado.foco, p = P[id], e = ev(id);
+    lateral.innerHTML = '';
+    var cab = $('div', 'gn-lat-cab');
+    if (estado.lado === 'familia') {
+      var atras = $('button', 'gn-atras', '‹'); atras.type = 'button'; atras.title = 'Volver a sus datos'; atras.setAttribute('data-lado', 'individuo');
+      cab.appendChild(atras);
+    } else cab.appendChild(retrato(id, 'gn-foto grande'));
+    var tt = $('div', 'gn-lat-tit');
+    tt.appendChild($('h2', '', p.n));
+    if (e.o && estado.lado !== 'familia') tt.appendChild($('p', 'gn-oficio', e.o));
     cab.appendChild(tt);
-    panel.appendChild(cab);
-    if (p.r) panel.appendChild(crear('p', 'resumen', p.r));
-    if (p.t && p.t !== p.r) {
-      var tx = crear('p', 'texto');
-      if (p.g) tx.appendChild(crear('b', '', 'En el árbol de Geneanet: '));
-      tx.appendChild(document.createTextNode(p.t.charAt(0).toUpperCase() + p.t.slice(1)));
-      panel.appendChild(tx);
+    var x = $('button', 'gn-cerrar', '×'); x.type = 'button'; x.title = 'Cerrar'; x.setAttribute('data-cerrar', '1');
+    cab.appendChild(x);
+    lateral.appendChild(cab);
+
+    var cuerpo = $('div', 'gn-lat-cuerpo');
+    if (estado.lado === 'individuo') {
+      if (e.n) cuerpo.appendChild(seccion('Nacimiento', e.n[0], [e.n[1]]));
+      if (e.b) cuerpo.appendChild(seccion('Bautismo', e.b[0], [e.b[1]]));
+      (e.m || []).forEach(function (m) {
+        var con = null;
+        if (m[0] && P[m[0]]) { con = $('p', ''); con.appendChild(document.createTextNode('con ')); con.appendChild(boton(m[0])); }
+        cuerpo.appendChild(seccion('Matrimonio', m[1], [con, m[2]]));
+      });
+      lista(id, 'c').forEach(function (c) {
+        if ((e.m || []).some(function (m) { return m[0] === c; })) return;
+        var con = $('p', ''); con.appendChild(document.createTextNode('con ')); con.appendChild(boton(c));
+        cuerpo.appendChild(seccion('Unión', '', [con]));
+      });
+      if (e.d || e.nota) cuerpo.appendChild(seccion('Defunción', e.d ? e.d[0] : '', [e.d ? e.d[1] : '', e.nota]));
+      if (!e.n && !e.d && p.f) cuerpo.appendChild(seccion('Fechas', p.f, []));
+      if (p.r) cuerpo.appendChild(seccion('Notas', '', [p.r]));
+      var f = seccion('Fuentes', '', [p.g ? 'Árbol de Cristo Santana Naranjo en Geneanet, basado en «Historia de los Naranjo en Canarias», de Miguel Rodríguez Díaz de Quintana.' : '', (!p.g || p.fi) ? 'Investigación familiar: registros parroquiales y civiles, FamilySearch, prensa y memorias de la familia.' : '']);
+      f.classList.add('fuentes'); cuerpo.appendChild(f);
+      var ac = $('div', 'gn-acciones');
+      var bf = $('button', 'gn-boton', p.fi ? 'Ficha completa, con documentos' : 'Ver su ficha'); bf.type = 'button'; bf.setAttribute('data-tab', 'ficha'); ac.appendChild(bf);
+      if (p.g) { var g = $('a', 'gn-boton sec', 'Geneanet ↗'); g.href = D.geneanet + p.g; g.target = '_blank'; g.rel = 'noopener'; ac.appendChild(g); }
+      cuerpo.appendChild(ac);
+    } else {
+      var ps = lista(id, 'p');
+      if (ps.length) { cuerpo.appendChild($('h3', 'gn-lat-sec', 'Padres')); ps.forEach(function (x) { cuerpo.appendChild(tarjeta(x)); }); }
+      var cs = lista(id, 'c'), hs = lista(id, 'h');
+      if (cs.length || hs.length) {
+        cuerpo.appendChild($('h3', 'gn-lat-sec', 'Uniones'));
+        (cs.length ? cs : [null]).forEach(function (c, i) {
+          var u = $('div', 'gn-union');
+          var m = (e.m || []).filter(function (m) { return m[0] === c; })[0];
+          if (c) {
+            u.appendChild(seccion(m ? 'Matrimonio' : 'Unión', m ? m[1] : '', [m ? m[2] : '']));
+            u.appendChild(tarjeta(c));
+          }
+          var suyos = hs.filter(function (h) { return !c || cs.length === 1 || lista(h, 'p').indexOf(c) >= 0; });
+          if (i === 0 && cs.length > 1) suyos = hs.filter(function (h) { return lista(h, 'p').indexOf(c) >= 0 || lista(h, 'p').length < 2; });
+          if (suyos.length) {
+            u.appendChild($('p', 'gn-sub', 'Hijos'));
+            suyos.forEach(function (h) { var t = tarjeta(h); t.classList.add('hijo'); u.appendChild(t); });
+          }
+          cuerpo.appendChild(u);
+        });
+      }
+      var her = hermanosCon(id).filter(function (h) { return h !== id; });
+      if (her.length) { cuerpo.appendChild($('h3', 'gn-lat-sec', 'Hermanos')); her.forEach(function (h) { cuerpo.appendChild(tarjeta(h)); }); }
     }
-    var dl = crear('dl', 'parientes');
-    fila(dl, 'Padres', lista(foco, 'p'));
-    fila(dl, lista(foco, 'c').length > 1 ? 'Matrimonios' : (p.s === 'f' ? 'Esposo' : 'Esposa'), lista(foco, 'c'));
-    fila(dl, 'Hijos', lista(foco, 'h'));
-    var hs = hermanos(foco);
-    if (hs.length) { fila(dl, 'Hermanos', hs); dl.lastChild.id = 'hermanos'; }
-    panel.appendChild(dl);
-    var ac = crear('p', 'acciones');
-    if (p.fi) {
-      var a = crear('a', 'boton', 'Abrir su ficha completa' + (p.nd ? ' · ' + plural(p.nd, 'documento', 'documentos') : '') + (p.fo ? ' y foto' : ''));
-      a.href = 'personas/' + p.fi + '.html'; ac.appendChild(a);
-    }
-    if (p.g) {
-      var g = crear('a', 'boton secundario', 'Ver en Geneanet ↗');
-      g.href = D.geneanet + p.g; g.target = '_blank'; g.rel = 'noopener'; ac.appendChild(g);
-    }
-    if (ac.childNodes.length) panel.appendChild(ac);
-    panel.appendChild(crear('p', 'fuente', p.g
-      ? 'Fuente: árbol de Cristo Santana Naranjo en Geneanet, basado en «Historia de los Naranjo en Canarias» de Miguel Rodríguez Díaz de Quintana' + (p.fi ? ', completado con nuestra investigación.' : '.')
-      : 'Fuente: investigación familiar (registros parroquiales y civiles, FamilySearch, prensa y memorias de la familia).'));
+    lateral.appendChild(cuerpo);
+    var pie = $('div', 'gn-lat-pie');
+    [['individuo', 'Individuo'], ['familia', 'Familia']].forEach(function (t) {
+      var b = $('button', estado.lado === t[0] ? 'activo' : '', t[1]); b.type = 'button'; b.setAttribute('data-lado', t[0]);
+      pie.appendChild(b);
+    });
+    lateral.appendChild(pie);
   }
+  lateral.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-ir],[data-lado],[data-cerrar],[data-tab]');
+    if (!t) return;
+    if (t.hasAttribute('data-cerrar')) return abrirLateral(false);
+    if (t.hasAttribute('data-lado')) { estado.lado = t.getAttribute('data-lado'); return pintarLateral(); }
+    if (t.hasAttribute('data-tab')) return cambiarTab(t.getAttribute('data-tab'), true);
+    seleccionar(t.getAttribute('data-ir'), true);
+  });
+
+  /* ---------------- pestaña Ficha ---------------- */
+  function sexo(id) { return P[id].s === 'f' ? '♀' : '♂'; }
+  function li(id, extra) {
+    var l = $('li', P[id].s === 'f' ? 'mujer' : 'hombre');
+    l.appendChild($('span', 'sx', sexo(id) + ' '));
+    if (P[id].priv) l.appendChild(document.createTextNode(P[id].n));
+    else if (id === estado.foco) l.appendChild($('b', '', P[id].n));
+    else l.appendChild(boton(id));
+    var f = P[id].f; if (f) l.appendChild(document.createTextNode(' ' + f));
+    if (extra) l.appendChild(document.createTextNode(extra));
+    return l;
+  }
+  function pintarFicha() {
+    var id = estado.foco, p = P[id], e = ev(id);
+    fichaEl.innerHTML = '';
+    var cab = $('div', 'gn-ficha-cab');
+    if (p.fo) { var a = $('a', 'gn-retrato'); a.href = p.fo; a.target = '_blank'; var im = $('img'); im.src = p.fo; im.alt = 'Retrato de ' + p.n; a.appendChild(im); cab.appendChild(a); }
+    var tt = $('div');
+    var h = $('h2', 'gn-ficha-nombre'); h.appendChild($('span', 'sx', sexo(id) + ' ')); h.appendChild(document.createTextNode(p.n)); tt.appendChild(h);
+    var ul = $('ul', 'gn-datos');
+    function dato(t, x) { if (x && (x[0] || x[1])) ul.appendChild($('li', '', t + (x[0] ? ' el ' + x[0] : '') + (x[1] ? ' – ' + x[1] : ''))); }
+    var fem = p.s === 'f';
+    dato(fem ? 'Nacida' : 'Nacido', e.n); dato(fem ? 'Bautizada' : 'Bautizado', e.b); dato(fem ? 'Fallecida' : 'Fallecido', e.d);
+    if (e.nota) ul.appendChild($('li', '', e.nota));
+    if (!e.n && !e.d && p.f) ul.appendChild($('li', '', p.f));
+    if (e.o) ul.appendChild($('li', '', e.o));
+    tt.appendChild(ul);
+    cab.appendChild(tt);
+    fichaEl.appendChild(cab);
+    if (p.r) fichaEl.appendChild($('p', 'gn-resumen', p.r));
+
+    function bloque(titulo) { var s = $('section', 'gn-bloque'); s.appendChild($('h3', '', titulo)); fichaEl.appendChild(s); return s; }
+    var ps = lista(id, 'p');
+    if (ps.length) { var b1 = bloque('Padres'), u1 = $('ul'); ps.forEach(function (x) { u1.appendChild(li(x)); }); b1.appendChild(u1); }
+    var cs = lista(id, 'c'), hs = lista(id, 'h');
+    if (cs.length || hs.length) {
+      var b2 = bloque('Casamiento(s) e hijo(s)'), u2 = $('ul');
+      (cs.length ? cs : [null]).forEach(function (c, i) {
+        var l = $('li', 'gn-casamiento');
+        var m = (e.m || []).filter(function (m) { return m[0] === c; })[0];
+        if (c) {
+          l.appendChild(document.createTextNode((m ? (fem ? 'Casada' : 'Casado') : 'Unión') + (m && m[1] ? ' el ' + m[1] : '') + (m && m[2] ? ', ' + m[2] : '') + ', con '));
+          l.appendChild(P[c].priv ? document.createTextNode(P[c].n) : boton(c));
+          if (P[c].f) l.appendChild(document.createTextNode(' ' + P[c].f));
+        } else l.appendChild(document.createTextNode('Hijos'));
+        var suyos = hs.filter(function (h) { return !c || cs.length === 1 || lista(h, 'p').indexOf(c) >= 0 || (i === 0 && lista(h, 'p').length < 2); });
+        if (suyos.length) { var uh = $('ul'); suyos.forEach(function (x) { uh.appendChild(li(x)); }); l.appendChild(uh); }
+        u2.appendChild(l);
+      });
+      b2.appendChild(u2);
+    }
+    var her = hermanosCon(id);
+    if (her.length > 1) { var b3 = bloque('Hermanos'), u3 = $('ul'); her.forEach(function (x) { u3.appendChild(li(x)); }); b3.appendChild(u3); }
+    if (p.t && p.g) { var b4 = bloque('Notas de Geneanet'); b4.appendChild($('p', '', p.t.charAt(0).toUpperCase() + p.t.slice(1))); }
+    if (p.fh) { var b5 = $('section', 'gn-bloque gn-propia'); b5.innerHTML = p.fh; fichaEl.appendChild(b5); }
+    var b6 = bloque('Fuentes'), u6 = $('ul');
+    if (p.g) { var lg = $('li'); lg.appendChild(document.createTextNode('Árbol de Cristo Santana Naranjo en Geneanet, basado en «Historia de los Naranjo en Canarias», de Miguel Rodríguez Díaz de Quintana. ')); var a2 = $('a', '', 'Ver en Geneanet ↗'); a2.href = D.geneanet + p.g; a2.target = '_blank'; a2.rel = 'noopener'; lg.appendChild(a2); u6.appendChild(lg); }
+    if (!p.g || p.fi) u6.appendChild($('li', '', 'Investigación familiar: registros parroquiales y civiles, FamilySearch, prensa y memorias de la familia.'));
+    if (p.fi) { var lf = $('li'); var a3 = $('a', '', 'Abrir esta ficha en una página aparte'); a3.href = 'personas/' + p.fi + '.html'; lf.appendChild(a3); u6.appendChild(lf); }
+    b6.appendChild(u6);
+  }
+  fichaEl.addEventListener('click', function (e) { var t = e.target.closest('[data-ir]'); if (t) seleccionar(t.getAttribute('data-ir'), true); });
+
+  /* ---------------- pestaña Cronología ---------------- */
+  var MES = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, oct: 10, nov: 11, dic: 12 };
+  function claveFecha(f) {
+    var y = anio(f); if (!y) return null;
+    var m = /(\d{1,2}) (\w{3}) \d{4}/.exec(f || ''), mm = /([a-z]{3}) \d{4}/.exec(f || '');
+    return y * 10000 + ((mm && MES[mm[1]]) || 0) * 100 + (m ? +m[1] : 0);
+  }
+  function pintarCronologia() {
+    var id = estado.foco, p = P[id], n0 = anioNac(id), sucesos = [];
+    function add(fecha, titulo, quien, lugar) { var k = claveFecha(fecha); if (k) sucesos.push({ k: k, fecha: fecha, t: titulo, q: quien, l: lugar }); }
+    function g(x, h, m) { return P[x].s === 'f' ? m : h; }
+    function vida(x, rol) {
+      var e = ev(x);
+      if (e.n) add(e.n[0], rol ? 'Nacimiento ' + rol : 'Nacimiento', rol ? x : null, e.n[1]);
+      else if (anioNac(x) && rol) add(String(anioNac(x)), 'Nacimiento ' + rol, x, '');
+      if (e.b && !rol) add(e.b[0], 'Bautismo', null, e.b[1]);
+      if (e.d) add(e.d[0], rol ? 'Defunción ' + rol : 'Defunción', rol ? x : null, e.d[1]);
+      else if (anioMuerte(x)) add(String(anioMuerte(x)), rol ? 'Defunción ' + rol : 'Defunción', rol ? x : null, '');
+      (e.m || []).forEach(function (m) { add(m[1], rol ? 'Matrimonio ' + rol : 'Matrimonio', rol ? [x, m[0]] : m[0], m[2]); });
+    }
+    vida(id, '');
+    lista(id, 'p').forEach(function (x) { var e = ev(x); var y = e.d ? e.d[0] : (anioMuerte(x) ? String(anioMuerte(x)) : ''); if (y) add(y, 'Defunción ' + g(x, 'del padre', 'de la madre'), x, e.d ? e.d[1] : ''); });
+    hermanosCon(id).filter(function (x) { return x !== id; }).forEach(function (x) { vida(x, g(x, 'de un hermano', 'de una hermana')); });
+    lista(id, 'h').forEach(function (x) {
+      vida(x, g(x, 'de un hijo', 'de una hija'));
+      lista(x, 'h').forEach(function (y) { var e = ev(y); if (e.n) add(e.n[0], 'Nacimiento ' + g(y, 'de un nieto', 'de una nieta'), y, e.n[1]); else if (anioNac(y)) add(String(anioNac(y)), 'Nacimiento ' + g(y, 'de un nieto', 'de una nieta'), y, ''); });
+    });
+    sucesos.sort(function (a, b) { return a.k - b.k; });
+    // no repetir el mismo suceso
+    var vistos = {};
+    sucesos = sucesos.filter(function (s) { var k = s.t + '|' + s.k + '|' + [].concat(s.q || '').join(); if (vistos[k]) return false; vistos[k] = 1; return true; });
+
+    cronoEl.innerHTML = '';
+    cronoEl.appendChild($('h2', 'gn-crono-tit', 'Cronología de ' + p.n));
+    cronoEl.appendChild($('p', 'gn-crono-sub', 'Los acontecimientos de su vida y de su familia cercana. Los que no tienen fecha no aparecen.'));
+    if (!sucesos.length) { cronoEl.appendChild($('p', 'gn-vacio', 'No hay acontecimientos con fecha.')); return; }
+    var ol = $('ol', 'gn-linea');
+    sucesos.forEach(function (s) {
+      var li2 = $('li', 'gn-suceso' + (s.q ? '' : ' propio'));
+      var col = $('div', 'gn-cuando');
+      col.appendChild($('b', '', String(anio(s.fecha))));
+      var resto = s.fecha.replace(/\s*\d{4}.*$/, '').replace(/^h\.\s*/, 'h. ');
+      if (resto && resto !== 'h.') col.appendChild($('span', '', resto));
+      var y = anio(s.fecha);
+      if (n0 && y && y >= n0) col.appendChild($('small', '', (y - n0) + ' años'));
+      li2.appendChild(col);
+      var cu = $('div', 'gn-que');
+      cu.appendChild($('b', '', s.t));
+      if (s.q) {
+        var pq = $('p', '');
+        [].concat(s.q).filter(Boolean).forEach(function (x, i) { if (i) pq.appendChild(document.createTextNode(' y ')); pq.appendChild(P[x].priv ? document.createTextNode(P[x].n) : boton(x)); });
+        if (pq.childNodes.length) cu.appendChild(pq);
+      }
+      if (s.l) cu.appendChild($('p', 'gn-lugar', s.l));
+      li2.appendChild(cu);
+      ol.appendChild(li2);
+    });
+    cronoEl.appendChild(ol);
+  }
+  cronoEl.addEventListener('click', function (e) { var t = e.target.closest('[data-ir]'); if (t) seleccionar(t.getAttribute('data-ir'), true); });
 
   /* ---------------- navegación ---------------- */
-  function enfocar(id, historial) {
-    if (!P[id] || P[id].priv) return;
-    var cambia = id !== foco;
-    foco = id;
-    if (cambia) abiertos = {};
-    componer(); ficha();
-    var buscador = document.getElementById('buscar-persona');
-    if (buscador && cambia) buscador.value = '';
-    if (historial && cambia) {
-      try { history.pushState({ id: id }, '', '#' + id); } catch (e) { location.hash = id; }
-    }
-    if (cambia) {
-      document.title = P[id].n + ' · Árbol de los Naranjo de Telde';
-      var arriba = raiz.getBoundingClientRect().top;
-      if (historial && (arriba < 0 || arriba > window.innerHeight * 0.6)) raiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      raiz.classList.remove('entra'); void raiz.offsetWidth; raiz.classList.add('entra');
-    }
+  function cambiarTab(tab, historial) {
+    estado.tab = tab;
+    Array.prototype.forEach.call(app.querySelectorAll('.gn-pestanas [data-tab]'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === tab ? 'true' : 'false'); });
+    Array.prototype.forEach.call(app.querySelectorAll('.gn-panel'), function (p) { p.hidden = p.getAttribute('data-panel') !== tab; });
+    if (tab === 'ficha') pintarFicha();
+    if (tab === 'cronologia') pintarCronologia();
+    if (tab === 'arbol') { componerArbol(); centrar(); }
+    if (historial) guardarDireccion();
   }
-
-  raiz.addEventListener('click', function (ev) {
-    var t = ev.target.closest('[data-desplegar],[data-plegar],[data-ir],[data-hermanos],.nodo[data-id]');
-    if (!t) return;
-    if (t.hasAttribute('data-desplegar')) { abiertos[t.getAttribute('data-desplegar')] = true; componer(); return; }
-    if (t.hasAttribute('data-plegar')) { abiertos[t.getAttribute('data-plegar')] = false; componer(); return; }
-    if (t.hasAttribute('data-ir')) { enfocar(t.getAttribute('data-ir'), true); return; }
-    if (t.hasAttribute('data-hermanos')) { var h = document.getElementById('hermanos'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    enfocar(t.getAttribute('data-id'), true);
-  });
-  if (panel) panel.addEventListener('click', function (ev) {
-    var t = ev.target.closest('.enlace-persona[data-id]');
-    if (t) enfocar(t.getAttribute('data-id'), true);
-  });
-  Array.prototype.forEach.call(document.querySelectorAll('.atajos [data-id]'), function (b) {
-    b.addEventListener('click', function () { enfocar(b.getAttribute('data-id'), true); });
+  function guardarDireccion() {
+    var h = '#' + estado.foco + (estado.tab !== 'arbol' ? '/' + estado.tab : '');
+    if (location.hash !== h) { try { history.pushState(null, '', h); } catch (x) { location.hash = h; } }
+  }
+  function seleccionar(id, historial) {
+    if (!P[id] || P[id].priv) return;
+    estado.foco = id;
+    etiqueta.textContent = P[id].n;
+    document.title = P[id].n + ' · Árbol de los Naranjo de Telde';
+    if (estado.tab === 'arbol') { componerArbol(); centrar(); }
+    else if (estado.tab === 'ficha') { pintarFicha(); app.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    else { pintarCronologia(); app.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    if (estado.lateral) pintarLateral();
+    if (historial) guardarDireccion();
+  }
+  app.querySelector('.gn-pestanas').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]'); if (b) cambiarTab(b.getAttribute('data-tab'), true);
   });
 
   // buscador
-  var buscador = document.getElementById('buscar-persona'), opciones = document.getElementById('lista-personas');
-  if (buscador && opciones) {
-    var porTexto = {};
-    Object.keys(P).filter(function (id) { return !P[id].priv; })
-      .sort(function (a, b) { return P[a].n.localeCompare(P[b].n, 'es'); })
-      .forEach(function (id) {
-        var t = P[id].n + (P[id].f ? ' (' + P[id].f + ')' : '');
-        if (porTexto[t]) t += ' · ' + id;
-        porTexto[t] = id;
-        var o = document.createElement('option'); o.value = t; opciones.appendChild(o);
-      });
-    function buscar() {
-      var v = buscador.value.trim();
-      if (porTexto[v]) { enfocar(porTexto[v], true); buscador.blur(); return true; }
-      return false;
-    }
-    buscador.addEventListener('input', buscar);
-    buscador.addEventListener('change', buscar);
-    buscador.form && buscador.form.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      if (buscar()) return;
-      var v = buscador.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-      if (!v) return;
-      var t = Object.keys(porTexto).filter(function (k) { return k.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').indexOf(v) >= 0; })[0];
-      if (t) { enfocar(porTexto[t], true); buscador.blur(); }
-    });
+  var buscador = document.getElementById('buscar-persona'), opciones = document.getElementById('lista-personas'), porTexto = {};
+  Object.keys(P).filter(function (id) { return !P[id].priv; }).sort(function (a, b) { return P[a].n.localeCompare(P[b].n, 'es'); }).forEach(function (id) {
+    var t = P[id].n + (P[id].f ? ' (' + P[id].f + ')' : '');
+    if (porTexto[t]) t += ' · ' + id;
+    porTexto[t] = id;
+    var o = document.createElement('option'); o.value = t; opciones.appendChild(o);
+  });
+  function normal(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  function buscar(exacto) {
+    var v = buscador.value.trim(); if (!v) return;
+    var id = porTexto[v];
+    if (!id && !exacto) { var n = normal(v); var k = Object.keys(porTexto).filter(function (t) { return normal(t).indexOf(n) >= 0; })[0]; id = k && porTexto[k]; }
+    if (id) { seleccionar(id, true); buscador.value = ''; buscador.blur(); }
   }
+  buscador.addEventListener('change', function () { buscar(true); });
+  buscador.form.addEventListener('submit', function (e) { e.preventDefault(); buscar(false); });
 
-  function desdeDireccion() {
-    var id = decodeURIComponent(location.hash.replace(/^#/, ''));
-    return P[id] && !P[id].priv ? id : null;
+  function leerDireccion() {
+    var h = decodeURIComponent(location.hash.replace(/^#/, '')).split('/');
+    return { id: P[h[0]] && !P[h[0]].priv ? h[0] : null, tab: ['ficha', 'cronologia'].indexOf(h[1]) >= 0 ? h[1] : 'arbol' };
   }
-  window.addEventListener('popstate', function () { enfocar(desdeDireccion() || INICIO, false); });
-  window.addEventListener('hashchange', function () { var id = desdeDireccion(); if (id && id !== foco) enfocar(id, false); });
-
-  var espera;
+  window.addEventListener('popstate', function () {
+    var d = leerDireccion(); estado.foco = d.id || app.getAttribute('data-inicio');
+    etiqueta.textContent = P[estado.foco].n;
+    cambiarTab(d.tab, false); if (estado.lateral) pintarLateral();
+  });
+  var espera, anchoPrevio = window.innerWidth;
   window.addEventListener('resize', function () {
     clearTimeout(espera);
     espera = setTimeout(function () {
-      if (Math.abs(raiz.clientWidth - anchoPrevio) > 1) componer(); else dibujar();
-    }, 80);
+      if (Math.abs(window.innerWidth - anchoPrevio) < 2) return;
+      anchoPrevio = window.innerWidth;
+      if (estado.tab === 'arbol') { componerArbol(); centrar(); }
+    }, 120);
   });
-  window.addEventListener('load', dibujar);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(dibujar);
-  // las fotos cambian el alto de algún recuadro al cargar
-  raiz.addEventListener('load', function () { dibujar(); }, true);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (estado.tab === 'arbol') { componerArbol(); centrar(); } });
 
-  enfocar(desdeDireccion() || INICIO, false);
+  // arranque
+  var d0 = leerDireccion();
+  estado.foco = d0.id || app.getAttribute('data-inicio');
+  estado.s = esMovil() ? 0.8 : 1;
+  estado.lateral = !esMovil();
+  app.classList.toggle('sin-lateral', !estado.lateral);
+  etiqueta.textContent = P[estado.foco].n;
+  cambiarTab(d0.tab, false);
+  if (estado.lateral) pintarLateral();
 })();

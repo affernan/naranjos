@@ -319,38 +319,63 @@ MAPA = '''<svg class="mapa" viewBox="0 0 900 300" role="img" aria-label="Rutas d
   <text x="440" y="30" class="rosa">✥</text>
 </svg>'''.replace("BARCO", BARCO.replace('<svg class="barco" viewBox="0 0 64 40" aria-hidden="true">', "").replace("</svg>", ""))
 
+def cuerpo_ficha(slug):
+    """Contenido de la ficha propia (datos, vida, documentos) para la pestaña «Ficha» de la portada."""
+    p = P[slug]
+    partes = []
+    if p["datos"]:
+        partes.append('<h3>Datos de nuestra investigación</h3><div class="tabla"><table class="datos">' + "".join(f"<tr><th>{e}</th><td>{v}</td></tr>" for e, v in p["datos"]) + "</table></div>")
+    if p["vida"]:
+        partes.append('<h3>Su vida en fechas</h3><div class="tabla"><table>' + "".join(f'<tr><td class="fecha">{f}</td><td>{h}</td></tr>' for f, h in p["vida"]) + "</table></div>")
+    if p["docs"]:
+        partes.append("<h3>Documentos y hallazgos</h3>" + "".join(bloque_doc(d, "") for d in p["docs"]))
+    if p["enlaces"]:
+        partes.append('<h3>En internet</h3><ul class="lista">' + "".join(f"<li>{e}</li>" for e in p["enlaces"]) + "</ul>")
+    if p["pendiente"]:
+        partes.append('<h3>Pendiente</h3><ul class="lista pendiente">' + "".join(f"<li>{x}</li>" for x in p["pendiente"]) + "</ul>")
+    return "\n".join(partes)
+
 def portada():
     import sys
     sys.path.insert(0, str(RAIZ))
     import _datos_arbol
-    personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js")
-    atajos = [
-        ("salvador-gonzalez-naranjo", "Todo el árbol", "desde Telde, s. XVIII"),
-        ("diego-perez-naranjo", "Los primeros Naranjo", "h. 1470"),
-        ("gregorio-suarez-navarro-naranjo", "Gregorio Suárez Navarro Naranjo", "1668"),
-        ("adrian-naranjo-cubas", "Adrián Naranjo y Cubas y sus 18 hijos", "1799"),
-        ("felix-naranjo-cabrera", "Félix y Rosalía", "1870"),
-        ("salvador-naranjo-cabrera", "La rama de Venezuela", "h. 1837"),
-        ("patricio-naranjo-cabrera", "Los Naranjo de Puerto Príncipe", "Cuba"),
-        ("agustin-naranjo-rodriguez", "La rama de Pinar del Río", "Cuba"),
-    ]
-    botones = "".join(f'<button type="button" data-id="{i}"><b>{t}</b><small>{f}</small></button>' for i, t, f in atajos if i in personas)
+    personas = _datos_arbol.generar(P, RAIZ / "arbol-datos.js", cuerpo_ficha)
     contenido = f"""
-<section class="portada">
-  <div class="escudo-grande"><img src="img/escudo-naranjo.png" alt="Escudo de armas de los Naranjo: en campo de oro, un naranjo de sinople frutado y un leopardo pasante al pie del tronco"><p>«De oro, un árbol de sinople, frutado de oro, y un leopardo de su color natural, pasante al pie del tronco.»<br><span>Armas de los Naranjo, según <i>Los Naranjos</i></span></p></div>
+<section class="portada compacta">
+  <img class="escudo-mini" src="img/escudo-naranjo.png" alt="Escudo de armas de los Naranjo">
   <div class="presentacion">
-    <h1>Árbol genealógico</h1>
-    <p class="entradilla">Los Naranjo de Telde, una familia de Gran Canaria con antepasados conocidos desde finales del siglo XV. En el XIX varios hermanos Naranjo Cabrera cruzaron el Atlántico hacia Venezuela y Cuba, y una de sus ramas echó raíces en Pinar del Río.</p>
-    <p class="instrucciones">Los Naranjo aparecen con toda su descendencia; las ramas de otros apellidos están plegadas: pulse «▾ ver hijos» para abrirlas. Pulse sobre cualquier persona para ponerla en el centro, con sus padres y abuelos encima; debajo del árbol verá su ficha, con enlaces a documentos y fotos.</p>
-    <div class="leyenda"><span><i class="muestra naranjo"></i>Apellido Naranjo</span><span><i class="muestra"></i>Otros apellidos</span><span><i class="muestra borde-verde"></i>Rama que llegó a Pinar del Río (Cuba)</span></div>
+    <h1>Árbol genealógico de los Naranjo</h1>
+    <p class="entradilla">Una familia de Telde (Gran Canaria) con antepasados conocidos desde finales del siglo XV, y ramas en Venezuela y Cuba.</p>
+    <div class="leyenda"><span><i class="muestra naranjo"></i>Apellido Naranjo</span><span><i class="muestra"></i>Otros apellidos</span><span><i class="muestra linea-verde"></i>Línea que llega a Pinar del Río</span></div>
   </div>
 </section>
-<div class="herramientas">
-  <form class="buscador" role="search" autocomplete="off"><label for="buscar-persona">Buscar a una persona</label><input id="buscar-persona" type="search" list="lista-personas" placeholder="Escriba un nombre: Natalio, Patricio, Tascón…"><datalist id="lista-personas"></datalist><button type="submit">Ir</button></form>
-  <nav class="atajos" aria-label="Ir a una rama de la familia">{botones}</nav>
+
+<div id="app" class="gn" data-inicio="adrian-naranjo-cubas">
+  <div class="gn-cabecera">
+    <span class="gn-etiqueta" id="gn-nombre">&nbsp;</span>
+    <form class="gn-buscar" role="search" autocomplete="off"><input id="buscar-persona" type="search" list="lista-personas" placeholder="Buscar: nombre o apellido" aria-label="Buscar a una persona"><datalist id="lista-personas"></datalist><button type="submit" aria-label="Buscar">⌕</button></form>
+  </div>
+  <nav class="gn-pestanas" role="tablist">
+    <button type="button" role="tab" data-tab="arbol" aria-selected="true">Árbol</button>
+    <button type="button" role="tab" data-tab="ficha" aria-selected="false">Ficha</button>
+    <button type="button" role="tab" data-tab="cronologia" aria-selected="false">Cronología</button>
+  </nav>
+  <div class="gn-panel" data-panel="arbol">
+    <div class="gn-arbol">
+      <div class="gn-lienzo" id="lienzo" tabindex="0" aria-label="Árbol genealógico: arrastre para moverse y pulse una persona para centrarla"></div>
+      <div class="gn-controles">
+        <button type="button" data-ctrl="centrar" title="Centrar en la persona">⌖</button>
+        <button type="button" data-ctrl="mas" title="Acercar">+</button>
+        <button type="button" data-ctrl="menos" title="Alejar">−</button>
+        <button type="button" data-ctrl="info" title="Ver los datos de la persona">ⓘ</button>
+      </div>
+      <aside class="gn-lateral" id="lateral" aria-live="polite"></aside>
+    </div>
+  </div>
+  <div class="gn-panel" data-panel="ficha" hidden><article class="gn-ficha" id="ficha"></article></div>
+  <div class="gn-panel" data-panel="cronologia" hidden><article class="gn-crono" id="cronologia"></article></div>
+  <noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript>
 </div>
-<div id="arbol" class="arbol-din" data-inicio="salvador-gonzalez-naranjo" aria-live="polite"><noscript><p class="nota-arbol">El árbol interactivo necesita JavaScript. Puede consultar las <a href="personas.html">fichas de cada persona</a>.</p></noscript></div>
-<section id="ficha-breve" class="ficha-breve" aria-live="polite"></section>
 <script src="{ver('arbol-datos.js')}"></script>
 <script src="{ver('arbol.js')}"></script>
 <p class="nota-arbol">{len([x for x in personas.values() if not x.get("priv")])} personas. Las generaciones antiguas y las ramas de Telde y Las Palmas proceden del árbol de Cristo Santana Naranjo en Geneanet, basado en el libro <i>Historia de los Naranjo en Canarias</i> de Miguel Rodríguez Díaz de Quintana. La rama de Pinar del Río, la de Venezuela y los padres de Quirina son de nuestra investigación. Solo se publican datos de personas fallecidas.</p>

@@ -284,8 +284,98 @@ CORRIGE = {
     "josefa antonia|cabrera de quintana y padon|0": dict(n="Josefa Antonia Cabrera de Quintana y Padrón"),
 }
 
+
+# ------------------------------------------------------------------ hechos de cada persona
+MESES = dict(enero="ene", febrero="feb", marzo="mar", abril="abr", mayo="may", junio="jun", julio="jul", agosto="ago",
+             septiembre="sep", setiembre="sep", octubre="oct", noviembre="nov", diciembre="dic")
+OFICIO = re.compile(r"^(Agricultor|Comerciante|Capit|M[eé]dico|Organ|Teniente|Propietario|Abogado|Perito|Maestro|Escritor|Poet|Humorista|Universal|Fundador|Licenciad|Labrador)")
+
+def fecha_de(s):
+    """«el 20 de octubre de 1843» -> «20 oct 1843»; «alrededor de 1879» -> «h. 1879»."""
+    s = s.strip()
+    m = re.match(r"(?:el |en )?(alrededor de )?(?:(\d{1,2}) de )?(?:([a-záéíóú]+) (?:de )?)?(\d{4})$", s)
+    if not m:
+        return ""
+    h, dia, mes, anio = m.groups()
+    partes = [dia or "", MESES.get(mes or "", ""), anio]
+    return ("h. " if h else "") + " ".join(x for x in partes if x)
+
+def lugar_de(segs):
+    l = ", ".join(x.strip(" .") for x in segs if x.strip(" ."))
+    return l.replace("Baustina", "Bautista").replace("Baustita", "Bautista")
+
+def hechos_de(t):
+    """Separa el texto de Geneanet en nacimiento, bautismo, defunción, oficio y matrimonio."""
+    e = {}
+    if not t:
+        return e
+    t = t.strip()
+    m = re.search(r"(?:^|\.\s*)(Casad[oa]\b|Con )", t)
+    indiv, matr = (t[:m.start()], t[m.start():].lstrip(". ")) if m else (t, "")
+    segs = [x.strip() for x in indiv.split(",")]
+    segs = [x for x in segs if x and "…" not in x]
+    actual, lugar, oficio = None, [], []
+    for sg in segs:
+        k = re.match(r"(nacid|bautizad|fallecid)[oa]\b(.*)$", sg)
+        if k:
+            if actual: e[actual[0]] = [actual[1], lugar_de(lugar)]
+            lugar = []
+            actual = ({"nacid": "n", "bautizad": "b", "fallecid": "d"}[k.group(1)], fecha_de(k.group(2)))
+        elif oficio or OFICIO.match(sg):
+            oficio.append(sg.strip(" ."))
+        elif sg.startswith("Fallecid"):
+            e["nota"] = sg.strip(" .")
+        elif actual:
+            lugar.append(sg)
+    if actual: e[actual[0]] = [actual[1], lugar_de(lugar)]
+    if oficio:
+        e["o"] = ", ".join(oficio)
+    if matr and "Persona privada" not in matr:
+        cortado = "…" in matr
+        matr = matr.split("…")[0]
+        partes = re.split(r",?\s+con\s+|^Con\s+", matr, maxsplit=1)
+        cab = partes[0]; con = partes[1] if len(partes) > 1 else ""
+        hs = [x.strip() for x in cab.split(",") if x.strip()]
+        if cortado and not con and len(hs) > 1:
+            hs = hs[:-1]          # el último trozo quedó cortado en la exportación
+        fecha = fecha_de(re.sub(r"^Casad[oa]\s*", "", hs[0])) if hs else ""
+        lugar = lugar_de(hs[1:])
+        nombre = re.split(r"[,.]", con)[0].strip()
+        e["m0"] = [nombre, fecha, lugar]
+    return e
+
+# hechos de nuestra investigación (o que completan a Geneanet): n, b, d = [fecha, lugar]; m = [[cónyuge, fecha, lugar]]
+HECHOS = {
+    "felix-naranjo-cabrera": dict(o="Labrador"),
+    "adrian-naranjo-cubas": dict(o="Agricultor; perito agrónomo de Canarias hasta 1859"),
+    "rosalia-rodriguez-valdes": dict(n=["", "Consolación del Sur, Pinar del Río (Cuba)"]),
+    "agustin-naranjo-rodriguez": dict(n=["3 abr 1875", "Telde, Gran Canaria"], b=["3 abr 1875", "Telde, Gran Canaria"], d=["h. 1950-1955", "Carretera de La Coloma, Pinar del Río (Cuba)"]),
+    "adrian-naranjo-rodriguez": dict(n=["2 may 1877", "Telde, Gran Canaria"], b=["4 may 1877", "Telde, Gran Canaria"]),
+    "natalio-naranjo-rodriguez": dict(n=["1 dic 1878", "Telde, Gran Canaria"], b=["9 dic 1878", "Telde, Gran Canaria"]),
+    "quirina-fernandez-fernandez": dict(n=["", "San Luis, Pinar del Río (Cuba)"]),
+    "felix-naranjo-fernandez": dict(n=["h. 1904-1905", "Cuba"]),
+    "juana-naranjo-fernandez": dict(n=["24 jun 1908", "Cuba"], d=["12 oct 2012", "Lisboa (Portugal)"]),
+    "jose-naranjo-fernandez": dict(n=["26 abr 1914", "Cuba"], d=["2 ago 1989", ""]),
+    "inocencia-naranjo-fernandez": dict(n=["20 jun 1915", "Barrio Primero de Ovas, Pinar del Río (Cuba)"], d=["2010", "La Habana (Cuba)"]),
+    "hugo-fernandez-arada": dict(n=["2 oct 1913", "Pinar del Río (Cuba)"], d=["entre 1984 y 1989", ""]),
+    "salvador-naranjo-cabrera": dict(d=["", "Venezuela"], m=[["josefa-cabrera-padron", "28 jun 1862", "La Victoria, Aragua (Venezuela)"]]),
+    "francisco-javier-naranjo-cabrera": dict(d=["21 oct 1866", "San Sebastián, Aragua (Venezuela)"], m=[["maria-de-jesus-zumbado", "1857", "Aragua (Venezuela)"]]),
+    "manuel-naranjo-cabrera": dict(d=["1913", ""]),
+    "adrian-eulogio-naranjo-cabrera": dict(n=["10 mar 1866", "La Victoria, Aragua (Venezuela)"], d=["1942", "Caracas (Venezuela)"]),
+    "narciso-naranjo-cabrera": dict(n=["h. 1867", ""], d=["16 jun 1900", "La Victoria, Aragua (Venezuela)"]),
+    "jose-naranjo-cabrera-1869": dict(n=["h. 1869", ""], d=["6 oct 1881", "La Victoria, Aragua (Venezuela)"]),
+    "antonia-evarista-naranjo-cabrera": dict(n=["1862", "La Victoria, Aragua (Venezuela)"]),
+    "rafael-de-jesus-naranjo-cabrera": dict(n=["1870", "La Victoria, Aragua (Venezuela)"]),
+    "rosa-naranjo-cabrera": dict(d=["17 mar 1900", "La Victoria, Aragua (Venezuela)"]),
+    "aurelia-naranjo-cabrera": dict(d=["13 sep 1900", "La Victoria, Aragua (Venezuela)"]),
+    "josefa-antonia-naranjo-zumbado": dict(m=[["rafael-ortega", "30 sep 1878", "San Sebastián, Aragua (Venezuela)"]]),
+    "francisco-javier-naranjo-zumbado": dict(b=["5 ago 1867", "San Sebastián, Aragua (Venezuela)"]),
+    "luisa-elena-naranjo-del-nogal": dict(b=["1 nov 1895", "San Sebastián, Aragua (Venezuela)"]),
+    "pedro-cabrera-padron": dict(m=[["maria-del-carmen-zumbado", "16 abr 1860", "La Victoria, Aragua (Venezuela)"]]),
+}
+
 # ------------------------------------------------------------------ generación
-def generar(P_fichas=None, destino=None):
+def generar(P_fichas=None, destino=None, cuerpo_ficha=None):
     G.clear(); ORDEN.clear(); EXTRA.clear()
     procesar()
     # en las listas de descendientes solo consta un progenitor: el otro es su cónyuge, si tuvo uno solo
@@ -326,6 +416,7 @@ def generar(P_fichas=None, destino=None):
             d["n"] = c.get("n", d["n"]); d["f"] = c.get("f", d["f"])
             if c.get("l"): d["l"] = c["l"]
             if c.get("t"): d["t"] = c["t"] + (" " + d["t"] if d["t"] and d["t"] != c["t"] else "")
+        d["e"] = hechos_de(p["t"])
         personas[ids[k]] = d
     ids_k = dict(ids)
 
@@ -333,14 +424,29 @@ def generar(P_fichas=None, destino=None):
     def ref(x):
         return ids_k.get(canon(x), x)
     for id_, nombre, fechas, sexo, padres, conyuges, texto in EXTRA:
-        personas[id_] = dict(n=nombre, f=fechas, s=sexo, t=texto, g="", p=[], c=[], h=[], propia=1)
-    personas["quirina-fernandez-fernandez"]["l"] = "Nacida en San Luis, Pinar del Río (Cuba)"
+        personas[id_] = dict(n=nombre, f=fechas, s=sexo, t=texto, g="", p=[], c=[], h=[], e={}, propia=1)
     for id_, nombre, fechas, sexo, padres, conyuges, texto in EXTRA:
         d = personas[id_]
         for x in padres:
             x = ref(x); anadir(d["p"], x); anadir(personas[x]["h"], id_)
         for x in conyuges:
             x = ref(x); anadir(d["c"], x); anadir(personas[x]["c"], id_)
+
+    for i, d in personas.items():
+        e = d["e"]
+        m0 = e.pop("m0", None)
+        if m0:
+            nombre, fecha, lugar = m0
+            clave = sin_tildes(nombre).lower().split()[:1]
+            con = [c for c in d["c"] if clave and sin_tildes(personas[c]["n"]).lower().startswith(clave[0])] or d["c"][:1]
+            e["m"] = [[con[0] if con else "", fecha, lugar]]
+        for campo, valor in HECHOS.get(i, {}).items():
+            if campo in ("n", "b", "d") and campo in e:
+                e[campo] = [valor[0] or e[campo][0], valor[1] or e[campo][1]]
+            else:
+                e[campo] = valor
+        for campo in ("n", "b", "d"):
+            if campo in e and not any(e[campo]): del e[campo]
 
     # orden de los padres (padre, madre) y de los hijos (por año)
     def anio_n(i):
@@ -379,6 +485,10 @@ def generar(P_fichas=None, destino=None):
             if P_fichas[i].get("foto"): d["fo"] = P_fichas[i]["foto"]
             d["r"] = P_fichas[i].get("resumen", "")
             d["nd"] = len(P_fichas[i].get("docs", []))
+        if cuerpo_ficha and d.get("fi"):
+            d["fh"] = cuerpo_ficha(i)
+        if not d["e"]: del d["e"]
+        d.pop("l", None)
         if not d["t"]: del d["t"]
         if not d["g"]: del d["g"]
         d.pop("propia", None)
